@@ -17,79 +17,7 @@ class AdminTeacherLessonController extends Controller
         $year = $request->input('year');
         $id = $request->input('id');
 
-        //check if teacher assigned to a class
-        $formTeacherRecord = FormTeacher::join(
-            'form_classes',
-            'form_teachers.form_class_id',
-            'form_classes.id'
-        )
-        ->select(
-            'form_class_id',
-            'class_level as form_class_level',
-        )
-        ->where([
-            ['employee_id', $id],
-            ['form_teachers.academic_year_id', $year]
-        ])
-        ->first();
-
-
-        if($formTeacherRecord)
-        {
-            //teacher assigned to class
-            $formClassId = $formTeacherRecord->form_class_id;
-
-            // TeacherLesson::where([
-            //     ['employee_id', $id],
-            //     ['form_class_id', '<>', $formClassId]
-            // ])->forceDelete();
-
-            $formClassSubjects = FormClassSubject::join(
-                'subjects',
-                'form_class_subjects.subject_id',
-                'subjects.id'
-            )
-            ->whereNull('form_class_level')
-            ->select(
-                'subject_id',
-                'title as subject_title'
-            )
-            ->get();
-
-            $formClassSubjectsCustom = FormClassSubject::join(
-                'subjects',
-                'form_class_subjects.subject_id',
-                'subjects.id'
-            )
-            ->where('form_class_level', $formTeacherRecord->form_class_level)
-            ->select(
-                'subject_id',
-                'title as subject_title'
-            )
-            ->get();
-
-            if($formClassSubjectsCustom->count() > 0) $formClassSubjects = $formClassSubjectsCustom;
-
-            foreach($formClassSubjects as $formClassSubject)
-            {
-                $teacherLesson = TeacherLesson::withTrashed()
-                ->firstOrNew(
-                    [
-                        'employee_id' => $id,
-                        'academic_year_id' => $year,
-                        'subject_id' => $formClassSubject->subject_id,
-                        'form_class_id' => $formClassId
-                    ]
-                );
-
-                if($teacherLesson->trashed()) continue;
-
-                $teacherLesson->save();
-            }
-        }
-
-        //get unique subject ids as a teacher may have multiple classes with the same subject
-        $uniqueSubjectIds = TeacherLesson::where([
+        $subjectIds = TeacherLesson::where([
             ['employee_id', $id],
             ['academic_year_id', $year]
         ])
@@ -97,7 +25,7 @@ class AdminTeacherLessonController extends Controller
         ->distinct()
         ->pluck('subject_id');
 
-        foreach($uniqueSubjectIds as $subjectId)
+        foreach($subjectIds as $subjectId)
         {
             $subjectFormClasses = TeacherLesson::where([
                 ['employee_id', $id],
@@ -135,8 +63,7 @@ class AdminTeacherLessonController extends Controller
             $subjectId = $newSubjectId;
         }
 
-        $databaseSubjectClasses = TeacherLesson::withTrashed()
-        ->where([
+        $databaseSubjectClasses = TeacherLesson::where([
             ['employee_id', $employeeId],
             ['academic_year_id', $academicYearId],
             ['subject_id', $subjectId]
@@ -149,8 +76,7 @@ class AdminTeacherLessonController extends Controller
 
         foreach($formClasses as $formClassId)
         {
-            $lesson = TeacherLesson::withTrashed()
-            ->where([
+            $lesson = TeacherLesson::where([
                 ['employee_id', $employeeId],
                 ['academic_year_id', $academicYearId],
                 ['subject_id', $subjectId],
@@ -170,24 +96,18 @@ class AdminTeacherLessonController extends Controller
                 continue;
             }
 
-            if($lesson->trashed())
-            {
-                //if lesson was deleted previously restore
-                $lesson->restore();
-            }
-
             //update existing lesson
-            // $teacherLesson = TeacherLesson::where([
-            //     ['employee_id', $employeeId],
-            //     ['academic_year_id', $academicYearId],
-            //     ['subject_id', $subjectId],
-            //     ['form_class_id', $formClassId]
-            // ])
-            // ->first();
+            $teacherLesson = TeacherLesson::where([
+                ['employee_id', $employeeId],
+                ['academic_year_id', $academicYearId],
+                ['subject_id', $subjectId],
+                ['form_class_id', $formClassId]
+            ])
+            ->first();
 
-            $lesson->subject_id = $newSubjectId;
-            $lesson->save();
-            $data['updated'] = $lesson;
+            $teacherLesson->subject_id = $newSubjectId;
+            $teacherLesson->save();
+            $data['updated'] = $teacherLesson;
         }
 
         foreach($databaseSubjectClasses as $formClassId)
@@ -209,13 +129,13 @@ class AdminTeacherLessonController extends Controller
 
     public function delete(Request $request)
     { 
-        $lesson = $request->input('lesson');
-        $employeeId = $lesson['employeeId'];
-        $academicYearId = $lesson['academicYearId'];
-        $formClasses = $lesson['formClasses'];
-        $subjectId = $lesson['subjectId'];
-        
+        $employeeId = $request->input('employeeId');
+        $academicYearId = $request->input('academicYearId');
+        $formClasses = $request->input('formClasses');
+        $subjectId = $request->input('subjectId');
+
         $deleted = array();
+
         foreach($formClasses as $formClassId)
         {
             $deleted[] = TeacherLesson::where([

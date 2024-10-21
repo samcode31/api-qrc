@@ -2,63 +2,61 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\FormTeacher;
-use App\Models\FormDean;
 use Illuminate\Http\Request;
-use App\Models\TeacherLesson;
-use Illuminate\Support\Facades\DB;
-use App\Models\FormClassSubject;
-use App\Models\FormClass;
+use App\Models\FormDean;
 
-class FormTeacherController extends Controller
+class FormDeanController extends Controller
 {
-    public function show(Request $request)
+    public function show (Request $request)
     {
-        return FormTeacher::where([
-            ['academic_year_id', $request->year ],
-            ['employee_id', $request->id ]
-        ])
-        ->pluck('form_class_id')
-        ->toArray();
-
-    }
-
-    public function store(Request $request)
-    {
-        $data = array();
-        $formClasses = $request->input('formClasses');
         $academicYearId = $request->input('academicYearId');
         $employeeId = $request->input('employeeId');
-
-        $formTeacherAssignments = FormTeacher::where([
+        
+        return FormDean::where([
             ['academic_year_id', $academicYearId],
             ['employee_id', $employeeId]
         ])
-        ->get();
+        ->pluck('form_class_id')
+        ->toArray();
+    }
 
-        $databaseFormClasses = $formTeacherAssignments->pluck('form_class_id')->toArray();
+    public function store (Request $request)
+    {
+        $academicYearId = $request->input('academicYearId');
+        $employeeId = $request->input('employeeId');
+        $formClasses = $request->input('formClasses');
 
-        $newFormClasses  = array_diff($formClasses, $databaseFormClasses);
+        $formDeanAssignments = FormDean::where([
+            ['academic_year_id', $academicYearId],
+            ['employee_id', $employeeId]
+        ])->get();
+
+        $databaseFormClasses = $formDeanAssignments->pluck('form_class_id')->toArray();
+
+        $newFormClasses = array_diff($formClasses, $databaseFormClasses);
 
         $deleteFormClasses = array_diff($databaseFormClasses, $formClasses);
 
+        $data = array();
+
         foreach($formClasses as $formClass)
         {
-            if(in_array($formClass, $newFormClasses))
-            {
-                $data[] = FormTeacher::create([
+            if(in_array($formClass, $newFormClasses)){
+                $data[] = FormDean::create([
                     'employee_id' => $employeeId,
                     'academic_year_id' => $academicYearId,
                     'form_class_id' => $formClass,
+                    'form_level' => $formClass[0]
                 ]);
             }
+
+            
         }
 
         foreach($databaseFormClasses as $formClass)
         {
-            if(in_array($formClass, $deleteFormClasses))
-            {
-                FormTeacher::where([
+            if(in_array($formClass, $deleteFormClasses)){
+                FormDean::where([
                     ['employee_id', $employeeId],
                     ['academic_year_id', $academicYearId],
                     ['form_class_id', $formClass]
@@ -68,6 +66,6 @@ class FormTeacherController extends Controller
         }
 
         return $data;
-        
+       
     }
 }

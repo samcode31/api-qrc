@@ -43,17 +43,7 @@ class UserController extends Controller
     {
         $user = UserAdmin::create([
             'name' => 'Admin',
-            'password' => Hash::make('PREAdm1n1$trat0r')
-        ]);
-
-        return $user;
-    }
-
-    public function registerPTA () 
-    {
-        $user = UserAdmin::create([
-            'name' => 'PTA',
-            'password' => Hash::make('Sc@rboroughSecPTA')
+            'password' => Hash::make(config('app.admin_password'))
         ]);
 
         return $user;

@@ -36,6 +36,7 @@ use App\Http\Controllers\ReligionController;
 use App\Http\Controllers\EthnicGroupController;
 use App\Http\Controllers\RegionalCorporationController;
 use App\Http\Controllers\PromotionController;
+use App\Http\Controllers\FormDeanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -157,6 +158,10 @@ Route::post('/promotion', [PromotionController::class, 'store']);
 
 Route::post('/promotion-undo', [PromotionController::class, 'undo']);
 
+Route::get('/dean-form-classes', [FormDeanController::class, 'show']);
+
+Route::post('/dean-form-classes', [FormDeanController::class, 'store']);
+
 
 
 /*
@@ -262,6 +267,14 @@ Route::post('/store-file', [FileUploadController::class, 'fileStore']);
 Route::get('/registration-form', [RegistrationFormController::class, 'createPDF']);
 
 Route::delete('/file', [FileUploadController::class, 'delete']);
+
+/*
+|--------------------------------------------------------------------------
+| Upload Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/upload-classes',[FormClassController::class, 'upload']);
 
 
 

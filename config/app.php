@@ -247,4 +247,6 @@ return [
 
     'school_end_time' => env('SCHOOL_END_TIME'),
 
+    'admin_password' => env('ADMIN_PASSWORD'),
+
 ];

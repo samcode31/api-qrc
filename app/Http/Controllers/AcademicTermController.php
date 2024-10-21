@@ -181,6 +181,7 @@ class AcademicTermController extends Controller
     public function store(Request $request)
     {
         $academicYear = AcademicYear::whereId($request->academic_year_id)->first();
+
         if(!$academicYear){
             $academicYear = AcademicYear::create();
             $academicYear->id = $request->academic_year_id;
@@ -188,12 +189,19 @@ class AcademicTermController extends Controller
         }
 
         AcademicTerm::query()->update(['is_current' => 0]);
+
         $academicTerm = AcademicTerm::updateOrCreate(
             [
-            "academic_year_id" => $request->academic_year_id,
-            "term" => $request->term 
+                "academic_year_id" => $request->academic_year_id,
+                "term" => $request->term 
             ],
-            $request->all()
+            [
+                "date_start" => $request->date_start,
+                "date_end" => $request->date_end,
+                "new_term_beginning" => $request->new_term_beginning,
+                "is_current" => $request->is_current,
+                "possible_attendance" => $request->possible_attendance
+            ]
         );
 
         $academicYearStart = substr($request->academic_year_id, 0, 4);
