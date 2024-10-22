@@ -35,4 +35,12 @@ class FormClassController extends Controller
         
         return $records;
     }
+
+    public function showFormLevels()
+    {
+        return FormClass::select('form_level')
+        ->where('form_level','<>', null)
+        ->distinct()
+        ->get();
+    }
 }

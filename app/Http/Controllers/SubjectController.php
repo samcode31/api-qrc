@@ -44,9 +44,9 @@ class SubjectController extends Controller
         //return $rows;
         $records = 0;
         for($i = 2; $i <= $rows; $i++){            
-            $subjCode = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(1,$i)->getValue();
-            $subject = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(2,$i)->getValue();
-            $abbr = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(3,$i)->getValue();
+            $subjCode = $spreadsheet->getActiveSheet()->getCell([1,$i])->getValue();
+            $subject = $spreadsheet->getActiveSheet()->getCell([2,$i])->getValue();
+            $abbr = $spreadsheet->getActiveSheet()->getCell([3,$i])->getValue();
             $subject = Subject::create([
                 "id" => $subjCode,
                 "title" => $subject,

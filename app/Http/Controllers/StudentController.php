@@ -472,9 +472,9 @@ class StudentController extends Controller
                     'houses.id',
                     'students.house_code'
                 )
-                ->where('id', $studentId)
+                ->where('students.id', $studentId)
                 ->select(
-                    'id', 
+                    'students.id', 
                     'first_name', 
                     'last_name', 
                     'sea_no', 

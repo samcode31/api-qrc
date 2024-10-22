@@ -37,6 +37,7 @@ use App\Http\Controllers\EthnicGroupController;
 use App\Http\Controllers\RegionalCorporationController;
 use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\FormDeanController;
+use App\Http\Controllers\StudentSubjectController;
 
 /*
 |--------------------------------------------------------------------------
@@ -162,6 +163,16 @@ Route::get('/dean-form-classes', [FormDeanController::class, 'show']);
 
 Route::post('/dean-form-classes', [FormDeanController::class, 'store']);
 
+Route::get('/form-levels', [FormClassController::class, 'showFormLevels']);
+
+Route::get('/subject-students', [StudentSubjectController::class, 'show']);
+
+Route::post('/subject-students', [StudentSubjectController::class, 'store']);
+
+Route::post('/subject-students-batch', [StudentSubjectController::class, 'storeBatch']);
+
+Route::delete('/subject-students', [StudentSubjectController::class, 'delete']);
+
 
 
 /*
@@ -275,6 +286,8 @@ Route::delete('/file', [FileUploadController::class, 'delete']);
 */
 
 Route::post('/upload-classes',[FormClassController::class, 'upload']);
+
+Route::post('/upload-subjects', [SubjectController::class, 'upload']);
 
 
 
