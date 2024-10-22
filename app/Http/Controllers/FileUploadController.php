@@ -288,7 +288,7 @@ class FileUploadController extends Controller
          $student->last_name = $spreadsheet->getActiveSheet()->getCell([2,$i])->getValue();
          $student->first_name = $spreadsheet->getActiveSheet()->getCell([3,$i])->getValue();
          $student->sea_no = $spreadsheet->getActiveSheet()->getCell([4,$i])->getValue();
-         $student->class_name = $spreadsheet->getActiveSheet()->getCell([5,$i])->getValue();
+         $student->class_id = $spreadsheet->getActiveSheet()->getCell([5,$i])->getValue();
          $dob = $spreadsheet->getActiveSheet()->getCell([6,$i])->getValue();
          if($dob){
             $dob = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($dob);

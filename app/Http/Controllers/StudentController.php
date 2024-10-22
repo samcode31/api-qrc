@@ -12,40 +12,13 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
-use App\Models\FormClass;
 use Throwable;
-use Illuminate\Support\Facades\DB;
-use App\Models\AcademicTerm;
 
 class StudentController extends Controller
 {
-    public function index (Request $request)
+    public function index ($id)
     {               
-        $academicTermRecord = AcademicTerm::where('is_current', 1)->first();
-        $academicYearId = $academicTermRecord ? $academicTermRecord->academic_year_id : null;
-
-        return DB::table('students')
-        ->join('form_classes', 'students.form_class_id', 'form_classes.id')
-        ->leftJoin('form_teachers', function($join) use ($academicYearId){
-            $join->on('form_classes.id', '=', 'form_teachers.form_class_id')
-            ->where('form_teachers.academic_year_id', $academicYearId);
-        })
-        ->leftJoin('employees', 'form_teachers.employee_id', 'employees.id')
-        ->select(
-            'students.*',
-            DB::raw('
-                CASE
-                    WHEN employees.id IS NOT NULL THEN CONCAT(form_classes.class_name, " - ", employees.first_name, " ", employees.last_name) 
-                    ELSE CONCAT(form_classes.class_name, " - GP",form_classes.class_group)
-                END AS class_name    
-
-            ')
-        )
-        ->where([
-            ['students.id', $request->input('student_id')],
-        ])
-        ->first();
-        // return Student::whereId($request->input('student_id'))->first();
+        return Student::whereId($id)->get();
     }
 
     public function store (Request $request)
@@ -54,7 +27,7 @@ class StudentController extends Controller
         
         $studentRecord = Student::updateOrCreate(
             ['id' => $id],
-            $request->except('name', 'class_name')
+            $request->except('name', 'form_level')
         );        
         
         return $studentRecord;
@@ -67,14 +40,13 @@ class StudentController extends Controller
         $students = Student::join(
             'form_classes', 
             'form_classes.id', 
-            'students.form_class_id'
-        )
+            'students.class_id')
         ->select(
             'students.id', 
             'first_name', 
             'last_name',
-            'class_name', 
-            'form_class_id', 
+            'form_level', 
+            'class_id', 
             'birth_certificate_no', 
             'date_of_birth',
             'file_birth_certificate',
@@ -117,7 +89,7 @@ class StudentController extends Controller
             'guardian_occupation',
             'guardian_phone',
             )
-        ->whereNotNull('form_classes.class_level') 
+        ->whereBetween('class_id',['0%', '7%']) 
         ->orderBy('last_name')
         ->orderBy('first_name')               
         ->get();
@@ -133,6 +105,10 @@ class StudentController extends Controller
             $student->file_immunization_card = URL::asset('storage/'.$student->file_immunization_card);
             if($student->picture)
             $student->picture = URL::asset('storage/'.$student->picture);
+            if($student->file_passport)
+            $student->file_passport = URL::asset('storage/'.$student->file_passport);
+            if($student->file_student_permit)
+            $student->file_student_permit = URL::asset('storage/'.$student->file_student_permit);
         }
 
         return $students;
@@ -469,23 +445,10 @@ class StudentController extends Controller
     {  
         $data = [];
         $students = json_decode($request->data);
-        foreach($students as $student)
-        {
+        foreach($students as $student){
             $studentId = $student->id;
             $house = House::where('name', $student->house_name)->first();
             $house_id = $house ? $house->id : null;
-            $formClassName = explode(" ", $student->class_name);
-            $formClassGroup = $formClassName[3];
-            $formClassName = $formClassName[0]." ".$formClassName[1];
-            $formClassRecord = FormClass::where([
-                ['class_name', $formClassName],
-                ['class_group', $formClassGroup]
-            ])
-            ->first();
-            
-            $formClassId = $formClassRecord ? $formClassRecord->id : null;
-            
-            $studentData = [];
             try{
                 Student::updateOrCreate(
                     [
@@ -495,7 +458,7 @@ class StudentController extends Controller
                         'first_name' => trim(ucwords(strtolower($student->first_name))),
                         'last_name' => trim(ucwords(strtolower($student->last_name))),
                         'sea_no' => $student->sea_no,
-                        'form_class_id' => $formClassId,
+                        'class_id' => trim($student->class_id),
                         'date_of_birth' => $student->date_of_birth,
                         'house_code' => $house_id,
                         'entry_date' => $student->entry_date,
@@ -504,29 +467,28 @@ class StudentController extends Controller
                     ]
                 );
                 
-                $studentRecord = Student::where('students.id', $studentId)
-                ->join(
-                    'form_classes',
-                    'students.form_class_id',
-                    'form_classes.id'
+                $studentRecord = Student::join(
+                    'houses',
+                    'houses.id',
+                    'students.house_code'
                 )
+                ->where('id', $studentId)
                 ->select(
-                    'students.id', 
-                    'last_name', 
+                    'id', 
                     'first_name', 
+                    'last_name', 
                     'sea_no', 
-                    'class_name', 
-                    'date_of_birth', 
-                    'house_code',
-                    'entry_date'
+                    'class_id', 
+                    'houses.name as house_name',
+                    'date_of_birth',
+                    'entry_date', 
                 )
                 ->first();
-
 
                 // $password = date_format(date_create($student->date_of_birth),"Ymd");
                 $password = $student->sea_no;
 
-                $studentUser = UserStudent::firstOrCreate(
+                UserStudent::updateOrcreate(
                     ['student_id' => $studentId],
                     [
                         'name' => $student->first_name.' '.$student->last_name,
@@ -535,10 +497,11 @@ class StudentController extends Controller
                     ]
                 );
 
+                $studentUser = UserStudent::where('student_id', $studentId)
+                ->first();
+
                 $studentRecord->error = 0;
                 $studentRecord->user = $studentUser;
-                // $studentData['record'] = $studentRecord;
-                // $studentData['user'] = $studentUser;
 
             } catch (Throwable $e) {
                 $studentRecord = new Student;
@@ -546,15 +509,16 @@ class StudentController extends Controller
                 $studentRecord->last_name = $student->last_name;
                 $studentRecord->first_name = $student->first_name;
                 $studentRecord->sea_no = $student->sea_no;
-                $studentRecord->class_name = $student->class_name;
-                $studentRecord->error = $e->getMessage();
+                $studentRecord->class_id = $student->class_id;
+                $studentRecord->error = 1;
+                $studentRecord->error_message = $e->getMessage();
                 $studentRecord->user = null;
-                $studentRecord->form_class_id = $formClassId;
             }
 
             array_push($data, $studentRecord);
 
         }
+
         return $data;
     }
 

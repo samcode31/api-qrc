@@ -31,7 +31,7 @@ class TownController extends Controller
     public function showDistinct() 
     {
         $data = array();
-        $towns = Student::whereBetween('form_class_id', ['1%', '7%'])
+        $towns = Student::whereBetween('class_id', ['1%', '7%'])
         ->select('address_line_2 as text')
         ->distinct()
         ->get();
@@ -39,10 +39,10 @@ class TownController extends Controller
         foreach($towns as $index => $town)
         {
             $classIds = Student::where('address_line_2', $town->text)
-            ->whereBetween('form_class_id', ['1%', '7%'])
-            ->select('form_class_id')
+            ->whereBetween('class_id', ['1%', '7%'])
+            ->select('class_id')
             ->distinct()
-            ->pluck('form_class_id');
+            ->pluck('class_id');
 
             $townClassIds = array();
             forEach($classIds as $classId)
@@ -50,11 +50,11 @@ class TownController extends Controller
                 $townClass = array();
                 $count = Student::where([
                     ['address_line_2', $town->text],
-                    ['form_class_id', $classId]
+                    ['class_id', $classId]
                 ])
                 ->get()
                 ->count();
-                $townClass['form_class_id'] = $classId;
+                $townClass['class_id'] = $classId;
                 $townClass['count'] = $count;
                 $townClassIds[] = $townClass;
             }

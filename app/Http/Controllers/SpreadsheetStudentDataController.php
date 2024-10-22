@@ -39,7 +39,7 @@ class SpreadsheetStudentDataController extends Controller
 
         // $query = Student::join(
         //     'form_classes',
-        //     'students.form_class_id',
+        //     'students.class_id',
         //     'form_classes.id'
         // )
         // ->select(
@@ -50,33 +50,24 @@ class SpreadsheetStudentDataController extends Controller
         // ->whereNotNull('class_level');
 
         $query = DB::table('students')
-        ->join('form_classes', 'students.form_class_id', 'form_classes.id')
-        ->leftJoin('form_teachers', function($join) use ($academicYearId){
-            $join->on('form_classes.id', '=', 'form_teachers.form_class_id')
-            ->where('form_teachers.academic_year_id', $academicYearId);
-        })
-        ->leftJoin('employees', 'form_teachers.employee_id', 'employees.id')
+        ->join('form_classes', 'students.class_id', 'form_classes.id')
         ->leftJoin('houses', 'students.house_code', 'houses.id')
         ->select(
             'students.id',
             'students.last_name',
             'students.first_name',
-            DB::raw('
-                CASE
-                    WHEN employees.id IS NOT NULL THEN CONCAT(form_classes.class_name, " - ", employees.first_name, " ", employees.last_name)
-                    ELSE CONCAT(form_classes.class_name, " - GP",form_classes.class_group)
-                END AS class_name
-            ')
         )
-        ->whereNotNull('class_level');
+        ->whereNotNull('form_level');
 
-        // ->whereBetween('form_class_id', ['1%', '7%']);
+        // ->whereBetween('class_id', ['1%', '7%']);
         // return $query->get();
 
         $arrayDataheaders = array();
-
-        foreach($headers as $header){
+       
+        foreach($headers as $header)
+        {
             $header = json_decode($header);
+            
             if($header->value == 'actions') continue;
 
             if($header->value == 'id')
@@ -102,9 +93,9 @@ class SpreadsheetStudentDataController extends Controller
                 continue;
             }
 
-            if($header->value == 'class_name')
+            if($header->value == 'class_id')
             {
-                $query->addSelect('students.form_class_id');
+                $query->addSelect('students.class_id');
                 continue;
             }
 
@@ -114,12 +105,12 @@ class SpreadsheetStudentDataController extends Controller
                 continue;
             }
 
-            if($header->value == 'form_class_id') $formClass = true;
+            if($header->value == 'class_id') $formClass = true;
 
             $query->addSelect($header->value);
         }
 
-        if($formClass) $query->orderBy('form_class_id');
+        if($formClass) $query->orderBy('class_id');
         $query->orderBy('students.last_name');
 
         $students = $query->get();
@@ -127,7 +118,7 @@ class SpreadsheetStudentDataController extends Controller
         foreach($filters as $key => $filter)
         {
             switch ($key) {
-                case 'class_name':
+                case 'class_id':
                     foreach($filter as $formClass)
                     {
                         $classIds[] = $formClass->id;
@@ -177,7 +168,7 @@ class SpreadsheetStudentDataController extends Controller
                 // return in_array($student->class_id, $classIds) &&
                 // in_array($student->address_line_2, $towns) &&
                 // in_array($student->father_occupation, $occupationsFather);
-                return $this->inFilterArray($student->form_class_id, $classIds);
+                return $this->inFilterArray($student->class_id, $classIds);
                 // $this->inFilterArray($student->address_line_2, $towns) &&
                 // $this->inFilterArray($student->father_occupation, $occupationsFather) &&
                 // $this->inFilterArray($student->mother_occupation, $occupationsMother) &&
@@ -194,13 +185,12 @@ class SpreadsheetStudentDataController extends Controller
         // return $data->toArray();
         $data = $data->map(function($item){
             $arrayItem = json_decode(json_encode($item), true);
-            if(isset($arrayItem['form_class_id']))
-            {
-                unset($arrayItem['form_class_id']);
-            }
+            // if(isset($arrayItem['class_id']))
+            // {
+            //     unset($arrayItem['class_id']);
+            // }
             return array_values($arrayItem);
         })->toArray();
-
 
         $sheet->fromArray(
             $data,

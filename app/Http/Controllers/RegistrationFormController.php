@@ -5,12 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\EthnicGroup;
+use App\Models\EthnicGroups;
 use App\Models\Religion;
 use App\Models\Student;
 use App\Models\House;
 use Codedge\Fpdf\Fpdf\Fpdf;
-use Illuminate\Support\Facades\DB;
-use App\Models\AcademicTerm;
 
 class RegistrationFormController extends Controller
 {
@@ -24,34 +23,8 @@ class RegistrationFormController extends Controller
     
     public function createPDF(Request $request)
     {
-        $id = $request->student_id;
-        $academicTermRecord = AcademicTerm::where('is_current', 1)->first();
-        $academicYearId = $academicTermRecord ? $academicTermRecord->academic_year_id : null;
-        // $record = Student::whereId($id)->first();   
-        $record = DB::table('students')
-        ->join('form_classes', 'students.form_class_id', 'form_classes.id')
-        ->leftJoin('form_teachers', function($join) use ($academicYearId){
-            $join->on('form_classes.id', '=', 'form_teachers.form_class_id')
-            ->where('form_teachers.academic_year_id', $academicYearId);
-        })
-        ->leftJoin('employees', 'form_teachers.employee_id', 'employees.id')
-        ->select(
-            'students.*',
-            DB::raw('
-                CASE
-                    WHEN employees.id IS NOT NULL THEN CONCAT(form_classes.class_name, " - ", employees.first_name, " ", employees.last_name) 
-                    ELSE CONCAT(form_classes.class_name, " - GP",form_classes.class_group)
-                END AS class_name    
-
-            ')
-        )
-        ->where([
-            ['students.id', $id],
-        ])
-        ->first();
-
-        // return $record->religion_code;
-
+        $id = $request->input('student_id');
+        $record = Student::whereId($id)->first();        
         $school = config('app.school_name');        
         $address = config('app.school_address_line_1');
         $contact = config('app.school_contact_line_1');
@@ -72,7 +45,7 @@ class RegistrationFormController extends Controller
         $ethnicGroupArray = EthnicGroup::whereId($record->ethnic_group_code)->get();
         $ethnicGroup = (sizeof($ethnicGroupArray) > 0) ? $ethnicGroupArray[0]->group_type : "";
 
-        // $imigrationPermit = ($record->immigration_permit == 0) ? "No" : "Yes";
+        $imigrationPermit = ($record->immigration_permit == 0) ? "No" : "Yes";
         $dob = date_format(date_create($record->date_of_birth), 'd-M-Y');
         $entryDate = date_format(date_create($record->entry_date), 'd-M-Y');
         $birthCertificate = ($record->file_birth_certificate) ? 3 : "";
@@ -80,7 +53,7 @@ class RegistrationFormController extends Controller
         $immunizationCard = ($record->file_immunization_card) ? 3 : "";
         $pictureFile = $record->picture;
         $passportPhoto = $pictureFile ? 3 : null;        
-        $photo = $pictureFile ? (file_exists(public_path('/storage/'.$pictureFile)) ? public_path('/storage/'.$pictureFile) : null) : null;
+        $photo = $pictureFile ?  public_path('/storage/'.$pictureFile) : null;
         $house = House::where('id', $record->house_code)->first();
         $house = $house ? $house->name : null;
         
@@ -98,7 +71,7 @@ class RegistrationFormController extends Controller
         $this->fpdf->SetMargins(10, 8);
         $this->fpdf->SetDrawColor(220, 220, 220);
         
-        $this->fpdf->Image($logo, 10, 6, 25);
+        $this->fpdf->Image($logo, 10, 6, 30);
         $this->fpdf->Rect(181, 6, 25, 30);
         $this->fpdf->SetFont('Times', '', '9');
         $x = $this->fpdf->GetX();
@@ -113,7 +86,7 @@ class RegistrationFormController extends Controller
         $this->fpdf->SetFillColor(255, 255, 255);
         $this->fpdf->Rect(180, 38, 30, 2, 'F');
         
-        $this->fpdf->SetFont('Times', 'B', '14');        
+        $this->fpdf->SetFont('Times', 'B', '16');        
         $this->fpdf->MultiCell(0, 6, strtoupper($school), $border, 'C');
         
         $this->fpdf->SetFont('Times', 'I', 10);
@@ -144,8 +117,8 @@ class RegistrationFormController extends Controller
         $this->fpdf->Cell(5, 6, '', 0, 0, 'L');
         $this->fpdf->Cell(25, 6, 'Class', 0, 0, 'L');
         $this->fpdf->Cell(5, 6, '', 0, 0, 'L');
-        $this->fpdf->Cell(70, 6, $record->class_name, $cellBorder, 0, 'L');
-        $this->fpdf->Cell(15, 6, '', 0, 0, 'L');
+        $this->fpdf->Cell(30, 6, $record->class_id, $cellBorder, 0, 'C');
+        $this->fpdf->Cell(55, 6, '', 0, 0, 'L');
         $this->fpdf->Cell(60, 6, 'Passport Photo', 0, 0, 'R');
         $this->fpdf->Cell(5, 6, '', 0, 0, 'L');
         $this->fpdf->SetFont('ZapfDingbats', '', 13);

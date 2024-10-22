@@ -12,7 +12,7 @@ class OccupationController extends Controller
         $parent = $request->input('parent');
         $data = array();
 
-        $occupations = Student::whereBetween('form_class_id', ['1%', '7%'])
+        $occupations = Student::whereBetween('class_id', ['1%', '7%'])
         ->select("$parent as text")
         ->distinct()
         ->get();
@@ -20,11 +20,11 @@ class OccupationController extends Controller
         foreach($occupations as $index => $occupation)
         {
             $occupationClassIds = Student::where($parent, $occupation->text)
-            ->whereBetween('form_class_id', ['1', '7'])
-            ->select('form_class_id')
+            ->whereBetween('class_id', ['1', '7'])
+            ->select('class_id')
             ->distinct()
             ->get()
-            ->pluck('form_class_id')
+            ->pluck('class_id')
             ->toArray();
 
             $occupation->id = $index;
@@ -32,11 +32,11 @@ class OccupationController extends Controller
 
             foreach ($occupationClassIds as $classId) {
                 $count = Student::where($parent, $occupation->text)
-                ->where('form_class_id', $classId)
+                ->where('class_id', $classId)
                 ->count();
 
                 $occupation->class_ids = [
-                    'form_class_id' => $classId,
+                    'class_id' => $classId,
                     'count' => $count
                 ];
             }
