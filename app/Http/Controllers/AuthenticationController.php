@@ -32,7 +32,7 @@ class AuthenticationController extends Controller
         $credentials = $request->only('name', 'password');
         //return $credentials;
         if(Auth::guard('employee')->attempt($credentials)){
-            return UserEmployee::whereName($request->name)->get();
+            return UserEmployee::whereName($request->name)->first();
         }
         elseif(Auth::guard('admin')->attempt(['name' => 'Admin', 'password' => $request->password]) ){
             return UserEmployee::whereName($request->name)->get();

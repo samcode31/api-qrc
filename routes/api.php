@@ -38,6 +38,10 @@ use App\Http\Controllers\RegionalCorporationController;
 use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\FormDeanController;
 use App\Http\Controllers\StudentSubjectController;
+use App\Http\Controllers\ReportLoginFailedController;
+use App\Http\Controller\ReportStudentSubjectController;
+use App\Http\Controller\ReportStudentNoLoginsController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -239,6 +243,12 @@ Route::get('/mark-sheet', [MarkSheetController::class, 'show']);
 Route::get('/report-card-access-logs', [ReportCardAccessLogController::class, 'show']);
 
 Route::get('/report-card-terms', [Table1Controller::class, 'showReportTerms']);
+
+Route::get('/report-failed-logins', [ReportLoginFailedController::class, 'show']);
+
+Route::get('/no-logins-student', [ReportStudentNoLoginsController::class, 'show']);
+
+Route::get('/student-subject-report', [ReportStudentSubjectController::class, 'show']);
 
 
 /*

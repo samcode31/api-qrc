@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
-use App\Models\FormTeacher;
 
 class Table1Controller extends Controller
 {
@@ -30,33 +29,18 @@ class Table1Controller extends Controller
         $possibleAttendance = $currentPeriod->possible_attendance;
 
         if(!$classId){
-            $students = Student::join(
-                'form_classes',
-                'students.form_class_id',
-                'form_classes.id'
-            )
-            ->select(
-                'students.id', 
-                'students.form_class_id', 
-                'form_classes.class_name',
-                'form_classes.class_group'
-            )
-            ->whereNotNull('class_level');
+            $students = Student::select('id', 'class_id')
+            ->where('class_id', 'LIKE', '1%')
+            ->orWhere('class_id', 'LIKE', '2%')
+            ->orWhere('class_id', 'LIKE', '3%')
+            ->orWhere('class_id', 'LIKE', '4%')
+            ->orWhere('class_id', 'LIKE', '5%')
+            ->orWhere('class_id', 'LIKE', '6%');
             // ->get();
         }
         else{
-            $students = Student::join(
-                'form_classes',
-                'students.form_class_id',
-                'form_classes.id'
-            )
-            ->select(
-                'students.id', 
-                'students.form_class_id',
-                'form_classes.class_name',
-                'form_classes.class_group'
-            )
-            ->where('form_class_id', $classId);
+            $students = Student::select('id', 'class_id')
+            ->where('class_id', $classId);
             // ->get();
         }
 
@@ -97,8 +81,7 @@ class Table1Controller extends Controller
                 foreach($students as $student){
                     ++$counter;
                     $studentId = $student->id;
-                    $className = $student->class_name;
-                    $classGroup = $student->class_group;
+                    $classId = $student->class_id;
                     Table1::updateOrCreate(
                         [
                             'student_id' => $studentId,
@@ -106,10 +89,9 @@ class Table1Controller extends Controller
                             'term' => $term,
                         ],
                         [
-                            'class_name' => $className,
+                            'class_id' => $classId,
                             'new_term_beginning' => $newTermBeginning,
-                            'possible_attendance' => $possibleAttendance,
-                            'class_group' => $classGroup
+                            'possible_attendance' => $possibleAttendance
                         ]
                     );
                 }
@@ -156,72 +138,21 @@ class Table1Controller extends Controller
         FlagTermRegistration::truncate();
     }
 
-    public function show(Request $request)
+    public function show($year, $term, $class_id)
     {
-        $year = $request->year;
-        $term = $request->term;
-        $className = $request->class_name;
-        $classGroup = $request->class_group;
-
-        $academicTermRecord = AcademicTerm::where('is_current', 1)->first();
-        $academicYearId = $academicTermRecord ? $academicTermRecord->academic_year_id : null;
-
-        $records = DB::table('table1')
-        ->join('students', 'students.id', 'table1.student_id')
-        ->join('form_classes', 'students.form_class_id', 'form_classes.id')
-        ->leftJoin('form_teachers', function($join) use ($academicYearId){
-            $join->on('form_classes.id', '=', 'form_teachers.form_class_id')
-            ->where('form_teachers.academic_year_id', $academicYearId);
-        })
-        ->leftJoin('employees', 'form_teachers.employee_id', 'employees.id')
-        ->select(
-            'table1.*',
-            DB::raw('
-                CASE
-                    WHEN employees.id IS NOT NULL THEN CONCAT(form_classes.class_name, " - ", employees.first_name, " ", employees.last_name) 
-                    ELSE CONCAT(form_classes.class_name, " - GP",form_classes.class_group)
-                END AS class_name_title
-            '),
-            'students.first_name',
-            'students.last_name',
-            'students.picture',
-            'form_classes.id as form_class_id',
-        )
+        $records = Table1::join('students', 'students.id', 'table1.student_id')
+        ->join('form_classes', 'table1.class_id', 'form_classes.id' )
+        ->select('table1.*','students.first_name', 'students.last_name', 'students.picture', 'form_classes.form_level')
         ->where([
             ['year', $year],
             ['term', $term],
-            ['table1.class_name', $className],
-            ['table1.class_group', $classGroup],
+            ['table1.class_id', $class_id]
         ])
         ->orderBy('last_name')
         ->orderBy('first_name')
         ->get();
 
-        return $records;
-
-
-        // $records = Table1::join(
-        //     'students', 
-        //     'students.id', 
-        //     'table1.student_id'
-        // )
-        // ->select(
-        //     'table1.*',
-        //     'students.first_name', 
-        //     'students.last_name', 
-        //     'students.picture'
-        // )
-        // ->where([
-        //     ['year', $year],
-        //     ['term', $term],
-        //     ['table1.class_name', $className],
-        //     ['table1.class_group', $classGroup],
-        // ])
-        // ->orderBy('last_name')
-        // ->orderBy('first_name')
-        // ->get();
-
-        // return ResourcesTable1::collection($records);
+        return ResourcesTable1::collection($records);
     }
 
     public function cmp($a, $b)
@@ -234,105 +165,55 @@ class Table1Controller extends Controller
         $currentPeriod = AcademicTerm::whereIsCurrent(1)->first();
         $year = substr($currentPeriod->academic_year_id, 0, 4);
         $term = $currentPeriod->term;
-        $formClasses = Table1::select(
-            'class_name', 
-            'class_group'
-        )
+        $formClasses = Table1::select('class_id')
         ->where([
             ['year', $year],
             ['term', $term],
-        ])
-        ->distinct()
+        ])->distinct()->addSelect(['form_level' => FormClass::select('form_level')
+        ->whereColumn('id', 'table1.class_id')])
+        ->orderBy('form_level')
         ->get();
-
-        $formTeachers = null;
-        forEach($formClasses as $formClass)
-        {
-            $formClassRecord = FormClass::where([
-                ['class_name', $formClass->class_name],
-                ['class_group', $formClass->class_group]
-            ])
-            ->first();
-
-            $formClass->form_class_id = $formClassRecord ?  $formClassRecord->id : null;
-            
-            $formTeacherRecords = FormTeacher::join(
-                'form_classes',
-                'form_teachers.form_class_id',
-                'form_classes.id'
-            )
-            ->join(
-                'employees',
-                'form_teachers.employee_id',
-                'employees.id'
-            )
-            ->where([
-                ['form_classes.class_name', $formClass->class_name],
-                ['form_classes.class_group', $formClass->class_group]
-            ])
-            ->select(
-                'employees.first_name',
-                'employees.last_name'
-            )
-            ->get();
-
-
-           $formTeachers = $formTeacherRecords->map(function ($formTeacherRecord){
-            return $formTeacherRecord->first_name.' '.$formTeacherRecord->last_name;
-           });
-
-           $formTeachers = $formTeachers->implode(' / ');
-
-           $formClass->form_teachers = $formTeachers;
-
-
-        }
 
         return $formClasses;
     }
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'student_id' => 'required|string',
-            'year' => 'required|string',
-            'term' => 'required|integer',
-            'class_name' => 'required|string',
-            'class_group' => 'required|integer',
-            'new_term_beginning' => 'required|string',
-            'possible_attendance' => 'nullable|integer',
-            'times_absent' => 'nullable|string',
-            'times_late' => 'nullable|string',
-            'comments' => 'nullable|string',
-            'shares_cooperates' => 'nullable|integer',
-            'listens_actively' => 'nullable|integer',
-            'persistent' => 'nullable|integer',
-            'accepts_challenges' => 'nullable|integer',
-            'prepared' => 'nullable|integer',
-            'monthly_test' => 'nullable|integer',
-            'project' => 'nullable|integer',
-            'term_test' => 'nullable|integer',
-            'communication' => 'nullable|string',
-            'cooperation' => 'nullable|string',
-            'respect' => 'nullable|string',
-            'responsibility' => 'nullable|string',
-            'attitude' => 'nullable|string',
-            'judgement' => 'nullable|string',
-            'complete_assignment' => 'nullable|string',
-            'class_participation' => 'nullable|string',
-            'self_confidence' => 'nullable|string',
-            'punctual' => 'nullable|string',
-        ]);
-        
-        return Table1::updateOrCreate(
+        $form_class_id = $request->class_id;
+        $form_level = null;
+        $form_class = FormClass::where('id', $form_class_id)
+        ->first();
+
+        if($form_class){
+            $form_level = $form_class->form_level;
+        }
+
+        if($request->promoted_to &&
+            (
+                $form_level == 1 ||
+                $form_level == 2 ||
+                $form_level == 4 ||
+                $form_level == 6
+            )
+        ){
+            Table1::where([
+                ['year', $request->year],
+                ['term', $request->term],
+                ['class_id', $request->class_id]
+            ])
+            ->update(['promoted_to' => $request->promoted_to]);
+        }
+
+        $record = Table1::updateOrCreate(
             [
-                'student_id' => $validatedData['student_id'],
-                'year' => $validatedData['year'],
-                'term' => $validatedData['term'],
+                'student_id' => $request->student_id,
+                'year' => $request->year,
+                'term' => $request->term,
             ],
-            $validatedData
+            $request->all()
         );
 
+        return $record;
     }
 
     public function upload()
@@ -406,12 +287,12 @@ class Table1Controller extends Controller
         return $records;
     }
 
-    public function showReportTerms(Request $request)
+    public function showReportTerms($studentId)
     {
-        $studentId = $request->student_id;
+
         $report_terms = [];
-        
-        $terms = Table1::select('table1.year', 'table1.term', 'table1.class_name', 'table1.class_group')
+        $terms = Table1::join('form_classes', 'form_classes.id', 'table1.class_id')
+        ->select('table1.year', 'table1.term', 'table1.class_id', 'form_classes.form_level')
         ->where('student_id', $studentId)
         ->orderBy('year', 'desc')
         ->orderBy('term', 'desc')
@@ -421,8 +302,8 @@ class Table1Controller extends Controller
             $term_record = [];
             $term_record['year'] = $term->year;
             $term_record['term'] = $term->term;
-            $term_record['class_name'] = $term->class_name;
-            $term_record['class_group'] = $term->class_group;
+            $term_record['class_id'] = $term->class_id;
+            $term_record['form_level'] = $term->form_level;
             $term_report = TermReport::where([
                 ['year', $term->year],
                 ['term', $term->term],

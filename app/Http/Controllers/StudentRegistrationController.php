@@ -4,14 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\StudentRegistration;
-use App\Models\FormClass;
 
 class StudentRegistrationController extends Controller
 {
     public function store(Request $request)
     {
         return StudentRegistration::where([
-            ['class_level', $request->class_level],
+            ['form_level', $request->form_level],
             ['form_class_id', $request->form_class_id]
         ])
         ->update([
@@ -20,26 +19,17 @@ class StudentRegistrationController extends Controller
         ]);
     }
 
-    public function show(Request $request)
+    public function show($form_level, $form_class_id = null)
     {
-        $classLevel = $request->input('class_level');
-        $formClassId = $request->input('form_class_id');
         return StudentRegistration::where([
-            ['class_level', $classLevel],
-            ['form_class_id', $formClassId]
+            ['form_level', $form_level],
+            ['form_class_id', $form_class_id]
         ])->first();
     }
 
     public function showAll()
     {
-        $studentRegistrationRecords = StudentRegistration::all();
-        foreach($studentRegistrationRecords as $key => $studentRegistrationRecord)
-        {
-            $formClassRecord = FormClass::where('class_level', $studentRegistrationRecord->class_level)->first();
-            $className = $formClassRecord ? $formClassRecord->class_name : null;
-            $studentRegistrationRecord->class_name = $className;
-        }
-        return $studentRegistrationRecords;
+        return StudentRegistration::all();
     }
 
     public function storeDeadline(Request $request)
