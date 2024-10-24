@@ -39,8 +39,10 @@ use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\FormDeanController;
 use App\Http\Controllers\StudentSubjectController;
 use App\Http\Controllers\ReportLoginFailedController;
-use App\Http\Controller\ReportStudentSubjectController;
-use App\Http\Controller\ReportStudentNoLoginsController;
+use App\Http\Controllers\ReportStudentSubjectController;
+use App\Http\Controllers\ReportStudentNoLoginsController;
+use App\Http\Controllers\MarkBookController;
+use App\Http\Controllers\MarkBookSpreadsheetController;
 
 
 /*
@@ -298,6 +300,28 @@ Route::delete('/file', [FileUploadController::class, 'delete']);
 Route::post('/upload-classes',[FormClassController::class, 'upload']);
 
 Route::post('/upload-subjects', [SubjectController::class, 'upload']);
+
+/*
+|--------------------------------------------------------------------------
+| Mark Book Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/mark-book', [MarkBookController::class, 'show']);
+
+Route::post('/mark-book', [MarkBookController::class, 'store']);
+
+Route::post('/mark-book-assesment', [MarkBookController::class, 'storeAssesment']);
+
+Route::get('/download-mark-book-page', [MarkBookController::class, 'download']);
+
+Route::get('/spreadsheet', [MarkBookSpreadsheetController::class, 'spreadsheet']);
+
+Route::post('/spreadsheet-download', [MarkBookSpreadsheetController::class, 'download']);
+
+Route::post('/upload-course-assesment', [FileUploadController::class, 'uploadCourseAssesment']);
+
+Route::post('/delete-course-assesment', [MarkBookController::class, 'deleteCourseAssesment']); 
 
 
 

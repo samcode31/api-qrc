@@ -13,6 +13,8 @@ use App\Models\Table2;
 use App\Models\StudentSubject;
 use App\Models\TeacherLesson;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
+use App\Models\AssesmentCourse;
+use App\Models\AssesmentEmployeeAssignment;
 
 class Table2Controller extends Controller
 {
@@ -20,6 +22,7 @@ class Table2Controller extends Controller
     {        
         $classId = $request->class_id;
         $year = $request->year;
+        $academicYearId = $year ? $year.($year + 1) : null;
         $term = $request->term;
         $subjectId = $request->subject_id;
         $employeeId = $request->employee_id;
@@ -68,6 +71,7 @@ class Table2Controller extends Controller
             $total = $classTotal->count();            
             foreach($studentsRegistered as $student)
             {
+                $courseMark = $this->getCourseMark($student->student_id, $academicYearId, $term, $subjectId, $employeeId, $classId);
                 $registered++;                
                 $studentId = $student->student_id;
                 $studentMarkRecord = new Table2;
@@ -77,7 +81,7 @@ class Table2Controller extends Controller
                 $studentMarkRecord->test = "End of Term";                    
                 $studentMarkRecord->subject_id = $subjectId;                    
                 $studentMarkRecord->exam_mark = null;                    
-                $studentMarkRecord->course_mark = null;                                       
+                $studentMarkRecord->course_mark = $courseMark;                                       
                 $studentMarkRecord->late = 0;                    
                 $studentMarkRecord->absent = 0;                    
                 $studentMarkRecord->comment = null; 
@@ -93,6 +97,7 @@ class Table2Controller extends Controller
                 ])->first();
                 
                 if($table2Record){
+                    $table2Record->course_mark = $courseMark;
                     $studentMarkRecord = $table2Record;
                     $entered++;
                 }
@@ -108,6 +113,7 @@ class Table2Controller extends Controller
 
             foreach($studentsRegistered as $student)
             {
+                
                 $studentId = $student->student_id;
                 $classId = $student->class_id;
                 $student_subject = StudentSubject::where([
@@ -120,6 +126,7 @@ class Table2Controller extends Controller
                 }
 
                 $registered++;
+                $courseMark = $this->getCourseMark($studentId, $academicYearId, $term, $subjectId, $employeeId, $classId);
 
                 $employee_id = $student_subject->employee_id;
 
@@ -143,32 +150,33 @@ class Table2Controller extends Controller
                         $studentMarkRecord->first_name = $student->first_name;
                         $studentMarkRecord->last_name = $student->last_name;
                         $studentMarkRecord->picture = $studentPicture;
-                        
-                        array_push($data, $studentMarkRecord);  
-                    }
-                    else{
-                        $studentMarkRecord = new Table2;
-                        $studentMarkRecord->student_id = $studentId;
-                        $studentMarkRecord->year = $year;
-                        $studentMarkRecord->term = $term;                    
-                        $studentMarkRecord->test = "End of Term";                    
-                        $studentMarkRecord->subject_id = $subjectId;                    
-                        $studentMarkRecord->exam_mark = null;                    
-                        $studentMarkRecord->course_mark = null;                                       
-                        $studentMarkRecord->late = 0;                    
-                        $studentMarkRecord->absent = 0;                    
-                        $studentMarkRecord->comment = null; 
-                        $studentMarkRecord->app = null; 
-                        $studentMarkRecord->con = null;                  
-                        $studentMarkRecord->employee_id = $employeeId;
-                        $studentMarkRecord->class_id = $classId;
-                        $studentPicture = Student::whereId($studentId)->first()->picture; 
-                        $studentMarkRecord->first_name = $student->first_name;
-                        $studentMarkRecord->last_name = $student->last_name;
-                        $studentMarkRecord->picture = $studentPicture;
-                                                
+                        $studentMarkRecord->course_mark = $courseMark;
                         array_push($data, $studentMarkRecord); 
+                        continue; 
                     }
+
+                    $studentMarkRecord = new Table2;
+                    $studentMarkRecord->student_id = $studentId;
+                    $studentMarkRecord->year = $year;
+                    $studentMarkRecord->term = $term;                    
+                    $studentMarkRecord->test = "End of Term";                    
+                    $studentMarkRecord->subject_id = $subjectId;                    
+                    $studentMarkRecord->exam_mark = null;                    
+                    $studentMarkRecord->course_mark = $courseMark;                                       
+                    $studentMarkRecord->late = 0;                    
+                    $studentMarkRecord->absent = 0;                    
+                    $studentMarkRecord->comment = null; 
+                    $studentMarkRecord->app = null; 
+                    $studentMarkRecord->con = null;                  
+                    $studentMarkRecord->employee_id = $employeeId;
+                    $studentMarkRecord->class_id = $classId;
+                    $studentPicture = Student::whereId($studentId)->first()->picture; 
+                    $studentMarkRecord->first_name = $student->first_name;
+                    $studentMarkRecord->last_name = $student->last_name;
+                    $studentMarkRecord->picture = $studentPicture;
+                                            
+                    array_push($data, $studentMarkRecord); 
+                   
                 }                       
 
             }
@@ -179,7 +187,38 @@ class Table2Controller extends Controller
         $table2Records['registered'] = $registered;
         $table2Records['entered'] = $entered;
         return $table2Records;    
-    }    
+    }  
+    
+    private function getCourseMark($studentId, $academicYearId, $term, $subjectId, $employeeId , $formClassId)
+    {
+        $courseMark = 0;
+        $courseMarkTotal = 0;
+
+        $assesments = AssesmentEmployeeAssignment::where([
+            ['academic_year_id', $academicYearId],
+            ['term', $term],
+            ['subject_id', $subjectId],
+            ['form_class_id', $formClassId],
+            ['employee_id', $employeeId]
+        ])->get();
+
+        foreach($assesments as $assesment)
+        {
+            $courseMarkTotal += $assesment->total;
+            $assesmentCourseRecord = AssesmentCourse::where([
+                ['assesment_employee_assignment_id', $assesment->id],
+                ['student_id', $studentId],
+            ])
+            ->first();
+
+            if($assesmentCourseRecord){
+                $courseMark += $assesmentCourseRecord->mark;
+            }
+        }
+
+        return $courseMark ?  number_format(($courseMark/$courseMarkTotal)*100, 0) : null;
+         
+    }
 
     public function cmp($a, $b)
     {
