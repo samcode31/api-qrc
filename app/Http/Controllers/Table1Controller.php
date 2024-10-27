@@ -138,8 +138,12 @@ class Table1Controller extends Controller
         FlagTermRegistration::truncate();
     }
 
-    public function show($year, $term, $class_id)
+    public function show(Request $request)
     {
+        $year = $request->year;
+        $term = $request->term;
+        $class_id = $request->class_id;
+
         $records = Table1::join('students', 'students.id', 'table1.student_id')
         ->join('form_classes', 'table1.class_id', 'form_classes.id' )
         ->select('table1.*','students.first_name', 'students.last_name', 'students.picture', 'form_classes.form_level')
@@ -188,29 +192,31 @@ class Table1Controller extends Controller
             $form_level = $form_class->form_level;
         }
 
-        if($request->promoted_to &&
-            (
-                $form_level == 1 ||
-                $form_level == 2 ||
-                $form_level == 4 ||
-                $form_level == 6
-            )
-        ){
-            Table1::where([
-                ['year', $request->year],
-                ['term', $request->term],
-                ['class_id', $request->class_id]
-            ])
-            ->update(['promoted_to' => $request->promoted_to]);
-        }
-
         $record = Table1::updateOrCreate(
             [
                 'student_id' => $request->student_id,
                 'year' => $request->year,
                 'term' => $request->term,
             ],
-            $request->all()
+            [
+                'class_id' => $request->class_id,
+                'new_term_beginning' => $request->new_term_beginning,
+                'possible_attendance' => $request->possible_attendance,
+                'times_absent' => $request->times_absent,
+                'times_late' => $request->times_late,
+                'comments' => $request->comments,
+                'dcomments' => $request->dcomments,
+                'auth' => $request->auth,
+                'resp' => $request->resp,
+                'coop' => $request->coop,
+                'cocurricular' => $request->cocurricular,
+                'mlate' => $request->mlate,
+                'mabs' => $request->mabs,
+                'mgrade' => $request->mgrade,
+                'mapp' => $request->mapp,
+                'mcon' => $request->mcon,
+                'mcomments' => $request->mcomments,
+            ]
         );
 
         return $record;

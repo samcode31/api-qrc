@@ -10,8 +10,6 @@ class Pdf extends Fpdf
 {
     public $widths;
     public $aligns;
-    public $borders;
-    public $fills;
     
     public function SetWidths($w)
     {
@@ -25,49 +23,45 @@ class Pdf extends Fpdf
         $this->aligns=$a;
     }
 
-    public function SetBorders($b)
-    {
-        //Set the array of borders
-        $this->borders=$b;
-    }
-
-    public function SetFills($f)
-    {
-        //Set the cell fill
-        $this->fills=$f;
-    }
-
-
-    public function Row($data, $fill)
+    public function Row($data, $fill=false, $border=1)
     {
         //Calculate the height of the row
-        $nb=0; 
-        $nbMax=0; 
-        $passmark = 50;
+        $nb=0; $nbMax=0; $noComment = false; $teacherCol = 9; $teacherInitialOffset = 62; $passmark = 50;
         
         for($i=0;$i<count($data);$i++)
-        $nbMax=max($nbMax,$this->NbLines($this->widths[$i],$data[$i]));
-        $h=5*$nbMax;
+            if($i != $teacherCol) $nbMax=max($nbMax,$this->NbLines($this->widths[$i],$data[$i]));
+        $h=6*$nbMax;
         
         //Issue a page break first if needed
         $this->CheckPageBreak($h);
         //Draw the cells of the row
         for($i=0;$i<count($data);$i++)
         {
-            $nb=$this->NbLines($this->widths[$i],$data[$i]);
+            if($i != $teacherCol) $nb=$this->NbLines($this->widths[$i],$data[$i]);
             if($nb == 0) $nb = 1;
-            $w=$this->widths[$i];
-            $a=isset($this->aligns[$i]) ? $this->aligns[$i] : 'L';
+            if($i != $teacherCol) $w=$this->widths[$i];
+            if($i != $teacherCol)$a=isset($this->aligns[$i]) ? $this->aligns[$i] : 'L';
             //Save the current position
             $x=$this->GetX();
             $y=$this->GetY();
             //set mark to red
-            if($i == 1 && is_numeric($data[$i]) && $data[$i] < $passmark) $this->SetTextColor(255, 0, 0);
-            if($i == 2 && is_numeric($data[$i]) && $data[$i] < $passmark) $this->SetTextColor(255, 0, 0);
+            // if($i == 1 && is_numeric($data[$i]) && $data[$i] < $passmark) $this->SetTextColor(255, 0, 0);
+            // if($i == 2 && is_numeric($data[$i]) && $data[$i] < $passmark) $this->SetTextColor(255, 0, 0);
             //Print the text
-                          
-            $this->MultiCell($w,bcdiv($h,$nb,1),$data[$i],$this->borders[$i],$a,$fill); 
-            $this->SetFont('Times','','10');           
+            if($i == $teacherCol ){                
+                $this->SetFont('Times','BI','10');
+                if($data[$teacherCol-1] == "\n\t")
+                    $this->Text($this->GetX() - $teacherInitialOffset, $this->GetY() + (bcdiv($h,$nb) + 1),$data[$i]);
+                else $this->Text($this->GetX() - $teacherInitialOffset, $this->GetY() + (bcdiv($h,$nb) * $nbMax) - 2," ".$data[$i]);
+                $this->SetFont('Times','','10');
+            }else{                
+                if($i==count($data)-1){
+                    $this->SetFont('Times','I','10'); 
+                }
+                if($i==5)  $this->MultiCell($w,bcdiv($h,$nb,1),$data[$i],$border,$a,$fill);                         
+                else $this->MultiCell($w,bcdiv($h,$nb,1),$data[$i],$border,$a,$fill); 
+                $this->SetFont('Times','','10');           
+            }  
             
             $this->SetTextColor(0, 0, 0);           
             
@@ -145,7 +139,7 @@ class Pdf extends Fpdf
         $this->_out($s);
     }
 
-    public function RotateText($txt, $angle, $cellWidth, $xOffset=15)
+    public function RotateText($txt, $angle, $cellWidth)
     {
 
         $x = $this->GetX();
@@ -156,7 +150,7 @@ class Pdf extends Fpdf
 
         $this->Rotate($angle, $x, $y);
 
-        $this->Text($x - $xOffset, $y - $yOffset, $txt);
+        $this->Text($x - 15, $y - $yOffset, $txt);
 
         $this->Rotate(0);
 

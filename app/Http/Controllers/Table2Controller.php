@@ -307,8 +307,13 @@ class Table2Controller extends Controller
         return $records;
     }
 
-    public function studentRecords($studentId, $year, $term, $classId)
+    public function studentRecords(Request $request)
     {
+        $studentId = $request->student_id;
+        $year = $request->year;
+        $term = $request->term;
+        $classId = $request->class_id;
+
         $data = [];
         $data['table2_records'] = Table2::join('subjects', 'subjects.id', 'table2.subject_id')
         ->select('table2.*','subjects.abbr', 'subjects.title')
@@ -331,7 +336,7 @@ class Table2Controller extends Controller
         
         $data['student_subjects'] = $this->studentSubjectsAssigned($year, $term, $classId, $studentId);
 
-        $data['subject_weightings'] = $this->subjectWeightings ($year, $term, $studentId);
+        //$data['subject_weightings'] = $this->subjectWeightings ($year, $term, $studentId);
 
         return $data;
     }
