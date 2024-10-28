@@ -301,6 +301,8 @@ Route::post('/upload-classes',[FormClassController::class, 'upload']);
 
 Route::post('/upload-subjects', [SubjectController::class, 'upload']);
 
+Route::post('/upload-employees', [EmployeeController::class, 'upload']);
+
 /*
 |--------------------------------------------------------------------------
 | Mark Book Routes

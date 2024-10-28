@@ -172,11 +172,17 @@ class EmployeeController extends Controller
         //return $dateOfBirth = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(3,2)->getValue();        
         $records = 0;        
         for($i = 2; $i <= $rows; $i++){            
-            $lastName = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(1,$i)->getValue();
-            $firstName = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(2,$i)->getValue();
-            $dateOfBirth = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(3,$i)->getValue();
-            $teacherNum = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(4,$i)->getValue();
-            $dayOfBirth = date_format(date_create($dateOfBirth), 'j'); 
+            $teacherNum = $spreadsheet->getActiveSheet()->getCell([1,$i])->getValue();
+            $lastName = $spreadsheet->getActiveSheet()->getCell([2,$i])->getValue();
+            $firstName = $spreadsheet->getActiveSheet()->getCell([3,$i])->getValue();
+            $dateOfBirth = $spreadsheet->getActiveSheet()->getCell([4,$i])->getValue();
+            if(!$lastName || !$firstName) continue;
+            $dayOfBirth = 1;
+            if($dateOfBirth){
+                $dateOfBirth = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($dateOfBirth);
+                $dateOfBirth = date_format($dateOfBirth, "Y-m-d");
+                $dayOfBirth = date_format(date_create($dateOfBirth), 'j'); 
+             }
             $employee = Employee::create([
                 'last_name' => $lastName,
                 'first_name' => $firstName,                
