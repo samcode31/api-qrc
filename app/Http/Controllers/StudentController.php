@@ -467,7 +467,7 @@ class StudentController extends Controller
                     ]
                 );
                 
-                $studentRecord = Student::join(
+                $studentRecord = Student::leftJoin(
                     'houses',
                     'houses.id',
                     'students.house_code'
