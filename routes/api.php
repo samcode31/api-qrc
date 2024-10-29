@@ -43,6 +43,7 @@ use App\Http\Controllers\ReportStudentSubjectController;
 use App\Http\Controllers\ReportStudentNoLoginsController;
 use App\Http\Controllers\MarkBookController;
 use App\Http\Controllers\MarkBookSpreadsheetController;
+use App\Http\Controllers\CoCurricularController;
 
 
 /*
@@ -230,6 +231,8 @@ Route::post('/table1', [Table1Controller::class, 'store']);
 Route::post('/table2-record-delete', [Table2Controller::class, 'delete']);
 
 Route::post('/update-table2', [Table2Controller::class, 'update']);
+
+Route::get('/co-curriculars', [CoCurricularController::class, 'show']);
 
 /*
 |--------------------------------------------------------------------------

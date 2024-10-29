@@ -51,7 +51,7 @@ class ReportCardController extends Controller
         $studentId = $request->input('studentId');
         $year = $request->input('year');
         $term = $request->input('term');
-        $classId = $request->input('class_id');
+        $classId = $request->input('classId');
         $academicYearId = $year.($year + 1);
 
         $academicTermRecord = AcademicTerm::where([
