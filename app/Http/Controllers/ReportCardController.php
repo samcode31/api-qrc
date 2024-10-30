@@ -449,7 +449,7 @@ class ReportCardController extends Controller
 
             $this->pdf->Row(array(
                 'Music', 
-                'Grade', 
+                "Grade \t\t".$mGrade,
                 $mLate, 
                 $mAbs, 
                 $mApp,
