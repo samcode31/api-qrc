@@ -191,7 +191,7 @@ class MarkSheetController extends Controller
 
             if($distinct_subject_count<$max_cols){
                 for($i=count($term_marks); $i<$max_cols; $i++ ){                
-                    $this->pdf->Cell(10,7,count($term_marks),1,0,'C',true);
+                    $this->pdf->Cell(10,7,'',1,0,'C',true);
                 }
             }
             $this->pdf->Cell(10,7,$record['total_marks'],1,0,'C',true);
