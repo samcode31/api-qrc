@@ -280,6 +280,7 @@ class FileUploadController extends Controller
       $reader = new Xlsx();
       $spreadsheet = $reader->load($file);
       $rows = $spreadsheet->getActiveSheet()->getHighestDataRow();
+      //return $rows;
       $data = [];
       for($i = 2; $i <= $rows; $i++){
          $student = new Student;

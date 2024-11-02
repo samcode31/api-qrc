@@ -12,6 +12,9 @@ class Student extends Model
     protected $guarded = [];
 
     // protected $fillable = ['*'];
+    protected $keyType = 'string';   // Specify the primary key type as string
+
+    public $incrementing = false;    // Disable auto-incrementing
 
     protected $hidden = [        
         'created_at',

@@ -255,6 +255,8 @@ Route::get('/no-logins-student', [ReportStudentNoLoginsController::class, 'show'
 
 Route::get('/student-subject-report', [ReportStudentSubjectController::class, 'show']);
 
+Route::get('/mark-sheet-excel', [MarkSheetController::class, 'download']);
+
 
 /*
 |--------------------------------------------------------------------------

@@ -391,9 +391,13 @@ class MarkSheetController extends Controller
     }
     
 
-    public function download ($year, $term, $class_id)
+    public function download (Request $request)
     {       
-        $subjectMarksColStart = 8; $colStart = 7;
+        $year = $request->year;
+        $term = $request->term;
+        $class_id = $request->classId;
+        $subjectMarksColStart = 8; 
+        $colStart = 7;
 
         $dataSummary = $this->spreadsheetDataSummary($year, $term, $class_id);
         // return $dataSummary;
@@ -431,8 +435,8 @@ class MarkSheetController extends Controller
         foreach($dataMarks as $markRecord){
             $col = $colStart;
             $row++;
-            $sheet->setCellValueByColumnAndRow($col, $row, $markRecord["average"]);
-            $sheet->setCellValueByColumnAndRow(++$col, $row, $markRecord["gpa"]);
+            $sheet->setCellValue([$col, $row], $markRecord["average"]);
+            $sheet->setCellValue([++$col, $row], $markRecord["gpa"]);
             foreach($markRecord["marks"] as $record){
                 $subjectTotal = null;
                 
@@ -470,9 +474,9 @@ class MarkSheetController extends Controller
                 // }
                 
                 
-                $sheet->setCellValueByColumnAndRow(
-                    ++$col, 
-                    $row, 
+                $sheet->setCellValue(
+                    [++$col, 
+                    $row ],
                     $cellValue
                 );
             }
