@@ -88,8 +88,17 @@ class StudentController extends Controller
             'mobile_guardian',
             'guardian_occupation',
             'guardian_phone',
-            )
-        ->whereBetween('class_id',['0%', '7%']) 
+        )
+        ->where(function($query) {
+            $query->where('students.class_id', 'LIKE', '0%')
+                    ->orWhere('students.class_id', 'LIKE', '1%')
+                    ->orWhere('students.class_id', 'LIKE', '2%')
+                    ->orWhere('students.class_id', 'LIKE', '3%')
+                    ->orWhere('students.class_id', 'LIKE', '4%')
+                    ->orWhere('students.class_id', 'LIKE', '5%')
+                    ->orWhere('students.class_id', 'LIKE', '6%')
+                    ->orWhere('students.class_id', 'LIKE', '7%');
+        })
         ->orderBy('last_name')
         ->orderBy('first_name')               
         ->get();
