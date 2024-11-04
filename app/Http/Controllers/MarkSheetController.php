@@ -277,10 +277,13 @@ class MarkSheetController extends Controller
         $form_level = $form_class ? $form_class->form_level : null;
 
         foreach($students_registered as $student){
-            $student_record = []; $student_term_marks = [];
-            $total_marks = 0; $total_subjects = 0;
+            $student_record = []; 
+            $student_term_marks = [];
+            $total_marks = 0; 
+            $total_subjects = 0;
 
             $student_id = $student->student_id;
+
             foreach($distinct_subjects as $subject){
                 $mark_record = [];
                 $subject_id = $subject->subject_id;
@@ -295,15 +298,15 @@ class MarkSheetController extends Controller
 
                 if(!$table2_record)
                 {
-                    $mark_record['exam_mark'] = null;
                     continue;
                 } 
 
                 
                 $course_mark = $table2_record->course_mark;
                 $exam_mark = $table2_record->exam_mark;
-                $mark_record['course_mark'] = is_null($course_mark) ? 'Ab' : $course_mark;
-                $mark_record['exam_mark'] = is_null($exam_mark) ? 'Ab' : $exam_mark;
+                // $mark_record['course_mark'] = is_null($course_mark) ? 'Ab' : $course_mark;
+                // $mark_record['exam_mark'] = is_null($exam_mark) ? 'Ab' : $exam_mark;
+                
                 if($term == 1 && (
                         $form_level == 5 ||
                         $form_level == 6 ||
@@ -402,7 +405,7 @@ class MarkSheetController extends Controller
         $dataSummary = $this->spreadsheetDataSummary($year, $term, $class_id);
         // return $dataSummary;
         $dataMarks = $this->spreadSheetDataMarks($year, $term, $class_id);
-        // return $dataMarks;
+        //return $dataMarks;
         $distinct_subjects = $this->distinctSubjects($year, $term, $class_id);
 
         $spreadsheet = new Spreadsheet();
@@ -414,8 +417,7 @@ class MarkSheetController extends Controller
             "Term", 
             "Abs",
             "Late",
-            "Avg%",
-            "GPA",
+            "Avg%"
         ];
 
         foreach($distinct_subjects as $subject){
@@ -436,43 +438,30 @@ class MarkSheetController extends Controller
             $col = $colStart;
             $row++;
             $sheet->setCellValue([$col, $row], $markRecord["average"]);
-            $sheet->setCellValue([++$col, $row], $markRecord["gpa"]);
+            // $sheet->setCellValue([++$col, $row], $markRecord["gpa"]);
             foreach($markRecord["marks"] as $record){
-                $subjectTotal = null;
-                
-                if($term == 2 && $class_id[0] <= 4)
-                {
-                    if(is_numeric($record["course_mark"])) $subjectTotal += $record["course_mark"];
-                    $cellValue = $subjectTotal;
-                }
+                // $subjectTotal = null;
 
-                else
-                {
-                    if(is_numeric($record["course_mark"])) $subjectTotal += $record["course_mark"];
-                    if(is_numeric($record["exam_mark"])) $subjectTotal += $record["exam_mark"];
-                    if(!is_null($subjectTotal)) $subjectTotal = number_format($subjectTotal/2,0);
+                $cellValue = $record["exam_mark"];
+                
+                // if($term == 2 && $class_id[0] <= 4)
+                // {
+                //     if(is_numeric($record["course_mark"])) $subjectTotal += $record["course_mark"];
+                //     $cellValue = $subjectTotal;
+                // }
+
+                // else
+                // {
+                //     if(is_numeric($record["course_mark"])) $subjectTotal += $record["course_mark"];
+                //     if(is_numeric($record["exam_mark"])) $subjectTotal += $record["exam_mark"];
+                //     if(!is_null($subjectTotal)) $subjectTotal = number_format($subjectTotal/2,0);
     
-                    $cellValue = $record["course_mark"]."   ".$record["exam_mark"]." | ".$subjectTotal;
-                    if(is_null($subjectTotal)){
-                        $cellValue = $record["course_mark"]."   ".$record["exam_mark"];
-                    }
+                //     $cellValue = $record["course_mark"]."   ".$record["exam_mark"]." | ".$subjectTotal;
+                //     if(is_null($subjectTotal)){
+                //         $cellValue = $record["course_mark"]."   ".$record["exam_mark"];
+                //     }
 
-                }
-
-
-                // if($record["course_mark"] == 'Ab'){
-                //     $cellValue = $record["course_mark"].str_repeat(' ', 3).
-                //     $record["exam_mark"];
                 // }
-                // elseif($record["course_mark"] < 10){
-                //     $cellValue = $record["course_mark"].str_repeat(' ', 6).
-                //     $record["exam_mark"];
-                // }
-                // else{
-                //     $cellValue = $record["course_mark"].str_repeat(' ', 4).
-                //     $record["exam_mark"];
-                // }
-                
                 
                 $sheet->setCellValue(
                     [++$col, 
@@ -625,10 +614,11 @@ class MarkSheetController extends Controller
             $student_marks = [];
             $total_marks = 0; 
             $total_subjects = 0;
-            $totalGPA = 0; 
 
             $student_id = $student->student_id;
-            foreach($distinct_subjects as $subject){
+
+            foreach($distinct_subjects as $subject)
+            {
                 $mark_record = [];                
                 $subject_id = $subject->subject_id;
 
@@ -640,44 +630,60 @@ class MarkSheetController extends Controller
                 ])
                 ->first();
 
-                if($table2_record){
-                    $course_mark = $table2_record->course_mark;
-                    $exam_mark = $table2_record->exam_mark;
-                    $subjectGPA = $this->subjectGPA(($course_mark+$exam_mark)/2);
-                    $mark_record['course_mark'] = is_null($course_mark) ? 'Ab' : $course_mark;                   
-                    $mark_record['exam_mark'] = is_null($exam_mark) ? 'Ab' : $exam_mark;
+                
+                if(!$table2_record)
+                {
+                    continue;
+                } 
+
+                $course_mark = $table2_record->course_mark;
+                $exam_mark = $table2_record->exam_mark;
+                // $mark_record['course_mark'] = is_null($course_mark) ? 'Ab' : $course_mark;                   
+                // $mark_record['exam_mark'] = is_null($exam_mark) ? 'Ab' : $exam_mark;
                     
-                    if(
-                        $term == 2 && (
-                            $form_level == 1 ||
-                            $form_level == 2 ||
-                            $form_level == 3 ||
-                            $form_level == 4
-                        ) &&
-                        is_numeric($course_mark)
-                    ){
-                        $total_marks += $course_mark;
-                        $mark_record['exam_mark'] = "--";
-                        $subjectGPA = $this->subjectGPA($course_mark);
-                    }                    
-                    else{
-                        $total_marks += ($exam_mark + $course_mark) / 2;
-                    }
-                    $total_subjects++;
-                    $totalGPA += $subjectGPA;
+                if($term == 1 && (
+                    $form_level == 5 ||
+                    $form_level == 6 ||
+                    $form_level == 7
+                )
+                ){
+                    $total_marks += is_numeric($course_mark) ? $course_mark : 0; 
+                    $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' : $course_mark;
                 }
-                else{
-                    $mark_record['course_mark'] = "--";
-                    $mark_record['exam_mark'] = "--";
+
+                elseif($term == 2 && (
+                    $form_level == 1 ||
+                    $form_level == 2 ||
+                    $form_level == 3 ||
+                    $form_level == 4
+                )){
+                    $total_marks += is_numeric($course_mark) ? $course_mark : 0; 
+                    $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' :$course_mark;
                 }
+
+                elseif($term == 2 && (
+                        $form_level == 5 ||
+                        $form_level == 6 ||
+                        $form_level == 7
+                    )
+                )
+                {
+                    $total_marks += is_numeric($exam_mark) ? $exam_mark : 0; 
+                    $mark_record['exam_mark'] = is_null($exam_mark) ? 'Abs' : $exam_mark;
+                }
+                else {
+                    $total_marks += is_numeric($course_mark) ? number_format($course_mark*0.3,1) : 0; 
+                    $total_marks += is_numeric($exam_mark) ? number_format($exam_mark*0.7,1) : 0;
+                    $mark_record['exam_mark'] = is_null($course_mark) && is_null($exam_mark) ? 'Abs' : number_format($course_mark*0.3 + $exam_mark*0.7,1); 
+                }
+
+                $total_subjects++;
                
                 array_push($student_marks, $mark_record);
             }
 
-            $average = ($total_subjects != 0) ? $total_marks/$total_subjects : null; 
-            $averageGPA = ($total_subjects != 0) ? $totalGPA/$total_subjects : null;                 
+            $average = ($total_subjects != 0) ? number_format($total_marks/$total_subjects,2) : null; 
             $student_record['average'] = $average;
-            $student_record['gpa'] = number_format($averageGPA, 2);
             $student_record['marks'] = $student_marks;
             array_push($data, $student_record);
         }
