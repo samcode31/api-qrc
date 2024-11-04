@@ -19,8 +19,10 @@ class StudentRegistrationController extends Controller
         ]);
     }
 
-    public function show($form_level, $form_class_id = null)
+    public function show(Request $request)
     {
+        $form_level = $request->form_level;
+        $form_class_id = $request->form_class_id;
         return StudentRegistration::where([
             ['form_level', $form_level],
             ['form_class_id', $form_class_id]

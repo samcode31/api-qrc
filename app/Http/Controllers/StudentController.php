@@ -16,9 +16,9 @@ use Throwable;
 
 class StudentController extends Controller
 {
-    public function index ($id)
+    public function index (Request $request)
     {               
-        return Student::whereId($id)->get();
+        return Student::whereId($request->student_id)->get();
     }
 
     public function store (Request $request)

@@ -14,7 +14,7 @@ class StudentSubjectController extends Controller
 
         return StudentSubject::join('students', 'student_subjects.student_id', '=', 'students.id')
             ->select(
-                'students.id as student_id', 
+                'student_subjects.student_id',
                 'students.first_name', 
                 'students.last_name', 
                 'students.class_id',

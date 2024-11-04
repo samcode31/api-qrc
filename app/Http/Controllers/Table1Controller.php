@@ -293,9 +293,9 @@ class Table1Controller extends Controller
         return $records;
     }
 
-    public function showReportTerms($studentId)
+    public function showReportTerms(Request $request)
     {
-
+        $studentId = $request->student_id;
         $report_terms = [];
         $terms = Table1::join('form_classes', 'form_classes.id', 'table1.class_id')
         ->select('table1.year', 'table1.term', 'table1.class_id', 'form_classes.form_level')
