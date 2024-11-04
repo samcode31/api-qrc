@@ -11,18 +11,27 @@ class StudentSubjectController extends Controller
     public function show (Request $request)
     {
         $subject_id = $request->subject_id;
-        return StudentSubject::join('students', 'student_subjects.student_id', 'students.id')        
-        ->select(
-            'students.id', 
-            'students.first_name', 
-            'students.last_name', 
-            'students.class_id',
-            'student_subjects.employee_id',            
-        )
-        ->orderBy('students.last_name')
-        ->where('subject_id', $subject_id)
-        ->whereBetween('class_id', ['0%', '7%'])
-        ->get();
+
+        return StudentSubject::join('students', 'student_subjects.student_id', '=', 'students.id')
+            ->select(
+                'students.id as student_id', 
+                'students.first_name', 
+                'students.last_name', 
+                'students.class_id',
+                'student_subjects.employee_id'           
+            )
+            ->where('student_subjects.subject_id', $subject_id)
+            ->where(function ($query) {
+                $query->where('students.class_id', 'LIKE', '1%')
+                    ->orWhere('students.class_id', 'LIKE', '2%')
+                    ->orWhere('students.class_id', 'LIKE', '3%')
+                    ->orWhere('students.class_id', 'LIKE', '4%')
+                    ->orWhere('students.class_id', 'LIKE', '5%')
+                    ->orWhere('students.class_id', 'LIKE', '6%');
+            })
+            ->orderBy('students.last_name')
+            ->get();
+
     }
 
     public function store (Request $request)
