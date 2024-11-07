@@ -24,8 +24,8 @@ class ReportStudentSubjectController extends Controller
         date_default_timezone_set('America/Caracas');
         $logo = public_path('/imgs/logo.png');        
         $school = config('app.school_name');        
-        $address = config('app.school_address');
-        $contact = config('app.school_contact');
+        $address = config('app.school_address_line_1');
+        $contact = config('app.school_contact_line_1');
         $subjectRecord = Subject::where('id', $subjectId)
         ->select('title')
         ->first();

@@ -138,10 +138,10 @@ class Table2Controller extends Controller
                 $entered++;
             }
 
-            if($table2Record && strtotime($table2Record->updated_at) < $courseMarkRecord['updated_at'])
-            {
-                $studentMarkRecord->course_mark = $courseMarkRecord['course_mark'];
-            }
+            // if($table2Record && strtotime($table2Record->updated_at) < $courseMarkRecord['updated_at'])
+            // {
+            //     $studentMarkRecord->course_mark = $courseMarkRecord['course_mark'];
+            // }
             
             $studentPicture = Student::whereId($studentId)->first()->picture;
             $studentMarkRecord->first_name = $student->first_name;
