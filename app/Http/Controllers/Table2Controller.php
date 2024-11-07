@@ -99,7 +99,14 @@ class Table2Controller extends Controller
         foreach($studentsRegistered as $student)
         {
             $registered++;                
-            $courseMarkRecord = $this->getCourseMark($student->student_id, $academicYearId, $term, $subjectId, $employeeId, $classId);
+            // $courseMarkRecord = $this->getCourseMark(
+            //     $student->student_id, 
+            //     $academicYearId, 
+            //     $term, 
+            //     $subjectId, 
+            //     $employeeId, 
+            //     $classId
+            // );
             $studentId = $student->student_id;
             
             $studentMarkRecord = new Table2;
@@ -109,7 +116,7 @@ class Table2Controller extends Controller
             $studentMarkRecord->test = "End of Term";                    
             $studentMarkRecord->subject_id = $subjectId;                    
             $studentMarkRecord->exam_mark = null;                    
-            $studentMarkRecord->course_mark = $courseMarkRecord['course_mark'];                                       
+            $studentMarkRecord->course_mark = null;                                       
             $studentMarkRecord->late = 0;                    
             $studentMarkRecord->absent = 0;                    
             $studentMarkRecord->comment = null; 
@@ -502,10 +509,11 @@ class Table2Controller extends Controller
             "subject_id" => $request->subject_id_new,
             "exam_mark" => $request->exam_mark,
             "course_mark" => $request->course_mark,
-            "coded_comment" => $request->coded_comment,
-            "coded_comment_1" => $request->coded_comment_1,
-            "app1" => $request->app1,
-            "con1" => $request->con1,
+            "late" => $request->late,
+            "absent" => $request->absent,
+            "app" => $request->app,
+            "con" => $request->con,
+            "comment" => $request->comment,
         ]);
     }
 

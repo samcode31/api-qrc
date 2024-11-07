@@ -15,6 +15,7 @@ use App\Models\Term;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use App\Models\Table2;
 
 class MarkBookController extends Controller
 {
@@ -215,7 +216,7 @@ class MarkBookController extends Controller
 
         $assementEmployeeAssignmentId = $assesment->id;
 
-        return AssesmentCourse::updateOrCreate(
+        $assesmentCourse = AssesmentCourse::updateOrCreate(
             [
                 'student_id' => $request->student_id,
                 'assesment_employee_assignment_id' => $assementEmployeeAssignmentId
@@ -224,6 +225,68 @@ class MarkBookController extends Controller
                 'mark' => $request->mark,                
             ]
         );
+
+        $this->setCourseMark(
+            $request->student_id, 
+            $request->academic_year_id, 
+            $request->term, 
+            $request->subject_id, 
+            $request->employee_id , 
+            $request->form_class_id
+        );
+
+        return $assesmentCourse;
+    }
+
+    private function setCourseMark(
+        $studentId, 
+        $academicYearId, 
+        $term, 
+        $subjectId, 
+        $employeeId, 
+        $formClassId
+    )
+    {
+        $data = array();
+        $courseMark = 0;
+        $courseMarkTotal = 0;
+
+        $assesments = AssesmentEmployeeAssignment::where([
+            ['academic_year_id', $academicYearId],
+            ['term', $term],
+            ['subject_id', $subjectId],
+            ['form_class_id', $formClassId],
+            ['employee_id', $employeeId]
+        ])->get();
+
+        foreach($assesments as $assesment)
+        {
+            $courseMarkTotal += $assesment->total;
+
+            $assesmentCourseRecord = AssesmentCourse::where([
+                ['assesment_employee_assignment_id', $assesment->id],
+                ['student_id', $studentId],
+            ])
+            ->first();
+
+            $courseMark += $assesmentCourseRecord ? $assesmentCourseRecord->mark : 0;
+            
+        }
+
+        $courseMark = $courseMark ?  number_format(($courseMark/$courseMarkTotal)*100, 0) : null;
+
+        Table2::updateOrCreate(
+            [
+                'student_id' => $studentId,
+                'year' => substr($academicYearId, 0, 4),
+                'term' => $term,
+                'subject_id' => $subjectId,
+            ],
+            [
+                'course_mark' => $courseMark
+            ]
+        );
+         
     }
 
     public function storeAssesment (Request $request)
