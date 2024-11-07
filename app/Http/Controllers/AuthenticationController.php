@@ -35,7 +35,7 @@ class AuthenticationController extends Controller
             return UserEmployee::whereName($request->name)->first();
         }
         elseif(Auth::guard('admin')->attempt(['name' => 'Admin', 'password' => $request->password]) ){
-            return UserEmployee::whereName($request->name)->get();
+            return UserEmployee::whereName($request->name)->first();
         }
         else{
             throw ValidationException::withMessages([
