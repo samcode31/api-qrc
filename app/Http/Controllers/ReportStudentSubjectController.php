@@ -42,6 +42,13 @@ class ReportStudentSubjectController extends Controller
         $formClasses = FormClass::where('form_level', $form)
         ->select('id')
         ->get();
+
+        if($form == 6){
+            $formClasses = FormClass::where('form_level', $form)
+            ->orWhere('form_level', 7)
+            ->select('id')
+            ->get();
+        }
         
         $subject = null;
         if($subjectRecord) $subject = $subjectRecord->title;

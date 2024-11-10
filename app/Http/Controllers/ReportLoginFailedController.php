@@ -10,7 +10,10 @@ use Carbon\Carbon;
 class ReportLoginFailedController extends Controller
 {
     private $pdf;
-    private $col1 = 15, $col2 = 95, $col3 = 25, $col4 = 41;
+    private $col1 = 25; 
+    private $col2 = 85; 
+    private $col3 = 25; 
+    private$col4 = 41;
 
     public function __construct(\App\Models\Pdf $pdf)
     {
@@ -61,8 +64,8 @@ class ReportLoginFailedController extends Controller
     {
         $logo = public_path('/imgs/logo.png');        
         $school = config('app.school_name');        
-        $address = config('app.school_address');
-        $contact = config('app.school_contact');
+        $address = config('app.school_address_line_1');
+        $contact = config('app.school_contact_line_1');
 
         $this->pdf->Image($logo, 15, 10, 24);
         $this->pdf->SetFont('Times', 'B', '16');       

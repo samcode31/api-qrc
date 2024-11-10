@@ -12,9 +12,9 @@ use Carbon\Carbon;
 class ReportCardAccessLogController extends Controller
 {
     private $pdf;
-    private $col1 = 15; 
+    private $col1 = 25; 
     private $col2 = 51; 
-    private $col3 = 40;
+    private $col3 = 30;
     private $col4 = 30; 
     private $col5 = 0;    
 
