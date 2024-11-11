@@ -330,7 +330,7 @@ Route::post('/upload-course-assesment', [FileUploadController::class, 'uploadCou
 
 Route::post('/delete-course-assesment', [MarkBookController::class, 'deleteCourseAssesment']); 
 
-
+Route::get('/academic-terms', [AcademicTermController::class, 'showAll']);
 
 
 

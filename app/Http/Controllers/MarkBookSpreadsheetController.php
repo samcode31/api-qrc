@@ -17,14 +17,23 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MarkBookSpreadsheetController extends Controller
 {
-    public function spreadsheet ($year = null, $term = null, $formLevel = null, $formClassId = null, $subjectId = null)
+    public function spreadsheet (Request $request)
     {
         date_default_timezone_set('America/Caracas');
+        $year = $request->year;
+        $term = $request->term;
+        $formLevel = $request->formLevel;
+        $formClassId = $request->formClass;
+        $subjectId = $request->subjectId;
+
+        // return  $this->spreadsheetData($year, $term, $formLevel, $formClassId, $subjectId);
 
         $response = new StreamedResponse(function () use($year, $term, $formLevel, $formClassId, $subjectId) {
             $complete = false;
-            $spreadsheet = null; $formClasses = [];
-            $subjectTitle = null; $termTitle = null;
+            $spreadsheet = null; 
+            $formClasses = [];
+            $subjectTitle = null; 
+            $termTitle = null;
             $progress = 0;
 
             $spreadsheet = new Spreadsheet();
@@ -143,15 +152,20 @@ class MarkBookSpreadsheetController extends Controller
 
     private function spreadsheetData ($year, $term, $formLevel, $formClass, $subjectId)
     {
-        $data = []; $students = []; $defaultAssesments = 5;
+        $data = []; 
+        $students = []; 
+        $defaultAssesments = 5;
+
         $academicTermRecord = AcademicTerm::where('is_current', 1)
         ->first();
+
         $currentTerm = $academicTermRecord ? $academicTermRecord->term : null;
         $currentYear = $academicTermRecord ? $academicTermRecord->academic_year_id : null;
 
         
 
-        if($formClass && !$subjectId){
+        if($formClass && !$subjectId)
+        {
             $students = AssesmentCourse::join(
                 'assesment_employee_assignments',
                 'assesment_employee_assignments.id',
@@ -163,7 +177,7 @@ class MarkBookSpreadsheetController extends Controller
                 'assesment_course.student_id'
             )
             ->select(
-                'students.id',
+                'students.id as student_id',
                 'students.first_name',
                 'students.last_name'
             )
@@ -204,7 +218,7 @@ class MarkBookSpreadsheetController extends Controller
                 'assesment_course.student_id'
             )
             ->select(
-                'students.id',
+                'students.id as student_id',
                 'students.first_name',
                 'students.last_name'
             )
@@ -226,7 +240,7 @@ class MarkBookSpreadsheetController extends Controller
                     ['class_id', $formClass]
                 ])
                 ->select(
-                    'students.id',
+                    'students.id as student_id',
                     'first_name',
                     'last_name',
                     'class_id'
@@ -248,7 +262,7 @@ class MarkBookSpreadsheetController extends Controller
                 'assesment_course.student_id'
             )
             ->select(
-                'students.id',
+                'students.id as student_id',
                 'students.first_name',
                 'students.last_name'
             )
@@ -275,7 +289,7 @@ class MarkBookSpreadsheetController extends Controller
                     ['class_id', $formClass]
                 ])
                 ->select(
-                    'students.id',
+                    'students.id as student_id',
                     'first_name',
                     'last_name',
                     'class_id'
@@ -297,7 +311,7 @@ class MarkBookSpreadsheetController extends Controller
                 'assesment_course.student_id'
             )
             ->select(
-                'students.id',
+                'students.id as student_id',
                 'students.first_name',
                 'students.last_name'
             )
@@ -320,7 +334,7 @@ class MarkBookSpreadsheetController extends Controller
                     ['subject_id', $subjectId]
                 ])
                 ->select(
-                    'id',
+                    'id as student_id',
                     'first_name',
                     'last_name',
                     'class_id'
@@ -330,7 +344,7 @@ class MarkBookSpreadsheetController extends Controller
                 ->get();
             }
         }
-        
+
         $subjects = TeacherLesson::where([
             ['academic_year_id', $year],
             ['form_class_id', $formClass]
@@ -390,16 +404,19 @@ class MarkBookSpreadsheetController extends Controller
 
         foreach($students as $student){
             $record = [];
+
             array_push(
                 $record, 
-                $student->id, 
+                $student->student_id, 
                 $student->first_name, 
                 $student->last_name
             );
 
             foreach($subjects as $subject){
-                $courseTotal = 0; $assesmentTotal = 0;
+                $courseTotal = 0; 
+                $assesmentTotal = 0;
                 $assessmentsCount = $defaultAssesments;
+
                 $employeeAssesments = AssesmentEmployeeAssignment::where([
                     ['academic_year_id', $year],
                     ['term', $term],
@@ -425,7 +442,7 @@ class MarkBookSpreadsheetController extends Controller
                         'total',
                     )
                     ->where([
-                        ['student_id', $student->id],
+                        ['student_id', $student->student_id],
                         ['academic_year_id', $year],
                         ['term', $term],
                         ['form_class_id', $formClass],
@@ -529,17 +546,17 @@ class MarkBookSpreadsheetController extends Controller
 
         $highestColumnIndex = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($highestColumn);
         
-        $mergeStart = $sheet->getCellByColumnAndRow($markColStart, 2)->getCoordinate(); 
+        $mergeStart = $sheet->getCell([$markColStart, 2])->getCoordinate(); 
         $mergeEnd = null;
 
         if($highestColumnIndex > $markColStart){
             for($row = 2; $row <= $highestRow; ++$row){           
 
                 for($col = $markColStart; $col <= $highestColumnIndex; ++$col){
-                    $value = $sheet->getCellByColumnAndRow($col, $row)->getValue();
+                    $value = $sheet->getCell([$col, $row])->getValue();
                     
                     if($value == "(Unweighted)"){
-                        $cellAddress = $sheet->getCellByColumnAndRow($col, $row)
+                        $cellAddress = $sheet->getCell([$col, $row])
                         ->getCoordinate();
                         $sheet->getStyle($cellAddress)->getFont()->setItalic(true);
                         $sheet->getStyle($cellAddress)->getFont()->setSize(9);
@@ -547,34 +564,34 @@ class MarkBookSpreadsheetController extends Controller
     
                     if($row == 2){
                         if($col != $markColStart && !$value){
-                            $mergeEnd = $sheet->getCellByColumnAndRow($col, $row)
+                            $mergeEnd = $sheet->getCell([$col, $row])
                             ->getCoordinate();
                         }
                         elseif($col != $markColStart && $value){
                             $sheet->mergeCells($mergeStart.':'.$mergeEnd);
                             // $sheet->setCellValueByColumnAndRow($col, 10, $mergeStart.':'.$mergeEnd);
-                            $mergeStart = $sheet->getCellByColumnAndRow($col, $row)
+                            $mergeStart = $sheet->getCell([$col, $row])
                             ->getCoordinate();
                         }                  
                     }
     
                     if($value == "AVERAGE"){
-                        $startCell = $sheet->getCellByColumnAndRow($col,6)
+                        $startCell = $sheet->getCell([$col,6])
                         ->getCoordinate();
-                        $endCell = $sheet->getCellByColumnAndRow($col,$highestRow)
+                        $endCell = $sheet->getCell([$col,$highestRow])
                         ->getCoordinate();
                         $sheet->getStyle($startCell.':'.$endCell)->getNumberFormat()
                         ->setFormatCode('0.0');
     
-                        $sheet->getStyle($sheet->getCellByColumnAndRow($col,$row)->getCoordinate())
+                        $sheet->getStyle($sheet->getCell([$col,$row])->getCoordinate())
                         ->getBorders()->getBottom()
                         ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_NONE);
     
-                        $sheet->getStyle($sheet->getCellByColumnAndRow($col,$row+1)->getCoordinate())
+                        $sheet->getStyle($sheet->getCell([$col,$row+1])->getCoordinate())
                         ->getBorders()->getTop()
                         ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_NONE);
     
-                        $startCell = $sheet->getCellByColumnAndRow($col,2)
+                        $startCell = $sheet->getCell([$col,2])
                         ->getCoordinate();
                         $sheet->getStyle($startCell.':'.$endCell)->getBorders()
                         ->getRight()

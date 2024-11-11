@@ -117,6 +117,7 @@ class AcademicTermController extends Controller
         return $data;
     }
 
+
     private function possibleAttendance ($termRecord)
     {
         $today = date('Y-m-d');
