@@ -8,6 +8,7 @@ use App\Models\House;
 use App\Models\Student;
 use App\Models\UserStudent;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Storage;
 
 class AdminStudentController extends Controller
 {
@@ -84,18 +85,20 @@ class AdminStudentController extends Controller
         foreach($students as $student) { 
             // $student->first_name =  ucwords(strtolower($student->first_name));          
             // $student->last_name =  ucwords(strtolower($student->last_name));          
+            $student->first_name =  ucwords(strtolower($student->first_name));          
+            $student->last_name =  ucwords(strtolower($student->last_name));          
             if($student->file_birth_certificate)
-            $student->file_birth_certificate = URL::asset('storage/'.$student->file_birth_certificate);
+            $student->file_birth_certificate = Storage::url($student->file_birth_certificate);
             if($student->file_sea_slip)
-            $student->file_sea_slip = URL::asset('storage/'.$student->file_sea_slip);
+            $student->file_sea_slip = Storage::url($student->file_sea_slip);
             if($student->file_immunization_card) 
-            $student->file_immunization_card = URL::asset('storage/'.$student->file_immunization_card);
+            $student->file_immunization_card = Storage::url($student->file_immunization_card);
             if($student->picture)
-            $student->picture = URL::asset('storage/'.$student->picture);
+            $student->picture = Storage::url($student->picture);
             if($student->file_passport)
-            $student->file_passport = URL::asset('storage/'.$student->file_passport);
+            $student->file_passport = Storage::url($student->file_passport);
             if($student->file_student_permit)
-            $student->file_student_permit = URL::asset('storage/'.$student->file_student_permit);
+            $student->file_student_permit = Storage::url($student->file_student_permit);
         }
 
         $data['current_students'] = $students;
@@ -169,18 +172,20 @@ class AdminStudentController extends Controller
         foreach($students as $student) { 
             // $student->first_name =  ucwords(strtolower($student->first_name));          
             // $student->last_name =  ucwords(strtolower($student->last_name));          
+            $student->first_name =  ucwords(strtolower($student->first_name));          
+            $student->last_name =  ucwords(strtolower($student->last_name));          
             if($student->file_birth_certificate)
-            $student->file_birth_certificate = URL::asset('storage/'.$student->file_birth_certificate);
+            $student->file_birth_certificate = Storage::url($student->file_birth_certificate);
             if($student->file_sea_slip)
-            $student->file_sea_slip = URL::asset('storage/'.$student->file_sea_slip);
+            $student->file_sea_slip = Storage::url($student->file_sea_slip);
             if($student->file_immunization_card) 
-            $student->file_immunization_card = URL::asset('storage/'.$student->file_immunization_card);
+            $student->file_immunization_card = Storage::url($student->file_immunization_card);
             if($student->picture)
-            $student->picture = URL::asset('storage/'.$student->picture);
+            $student->picture = Storage::url($student->picture);
             if($student->file_passport)
-            $student->file_passport = URL::asset('storage/'.$student->file_passport);
+            $student->file_passport = Storage::url($student->file_passport);
             if($student->file_student_permit)
-            $student->file_student_permit = URL::asset('storage/'.$student->file_student_permit);
+            $student->file_student_permit = Storage::url($student->file_student_permit);
         }
 
         $data['archived_students'] = $students;

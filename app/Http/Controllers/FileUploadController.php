@@ -53,6 +53,13 @@ class FileUploadController extends Controller
            case 'picture';
                $student->picture = $picture_name;
                break;
+
+               case 'passport';
+               $student->file_passport = $generated_new_name;
+               break;
+               
+            case 'student_permit';
+               $student->file_student_permit = $generated_new_name;
         }
 
         $student->save();
@@ -95,6 +102,18 @@ class FileUploadController extends Controller
          return Student::where('id', $id)
          
          ->update(['picture' => null]);
+      }
+
+      if($fileType === 'passport'){
+         return Student::where('id', $id)
+         
+         ->update(['file_passport' => null]);
+      }
+
+      if($fileType === 'student_permit'){
+         return Student::where('id', $id)
+         
+         ->update(['file_student_permit' => null]);
       }
       // if(Storage::disk('public')->exists($fileName) && Storage::disk('public')->delete('fileName')){
       //    if($fileType == 'birth_certificate')
@@ -264,6 +283,26 @@ class FileUploadController extends Controller
                'type' => 'picture',
                'url' => Storage::url($student->picture),
                'name' => $student->picture
+            )
+         );
+      }
+
+      if($student->file_passport){
+         array_push($data,
+            array(
+               'type' => 'passport',
+               'url' => Storage::url($student->file_passport),
+               'name' => $student->file_passport
+            )
+         );
+      }
+
+      if($student->file_student_permit){
+         array_push($data,
+            array(
+               'type' => 'student_permit',
+               'url' => Storage::url($student->file_student_permit),
+               'name' => $student->file_student_permit
             )
          );
       }
