@@ -273,7 +273,7 @@ class ReportCardController extends Controller
                 $this->pdf->SetXY($x+15,$y);
                 $x=$this->pdf->GetX();
                 $y=$this->pdf->GetY();
-                $this->pdf->MultiCell(15, 3, "\n\nEXAM\----\n\t", 1, 'C');
+                $this->pdf->MultiCell(15, 3, "\n\nEXAM\n----\n\t", 1, 'C');
                 $this->pdf->SetXY($x+15,$y);
             }
     

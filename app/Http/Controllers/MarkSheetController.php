@@ -18,10 +18,10 @@ class MarkSheetController extends Controller
     protected $pdf;
     private $maxTermTest = 100;
     private $participationMaxTotal = 25;
-    
+
 
     public function __construct(\App\Models\Pdf $pdf)
-    {        
+    {
         $this->pdf = $pdf;
     }
 
@@ -32,11 +32,11 @@ class MarkSheetController extends Controller
         $term = $request->term;
         $class_id = $request->classId;
         $logo = public_path('/imgs/logo.png');
-        $school = strtoupper(config('app.school_name'));        
+        $school = strtoupper(config('app.school_name'));
         $address = config('app.school_address_line_1');
-        $contact = config('app.school_contact_line_1');       
+        $contact = config('app.school_contact_line_1');
         $passMark = 50;
-        $max_cols=22; 
+        $max_cols=22;
         $max_rows=15;
         $averages = array();
 
@@ -64,7 +64,7 @@ class MarkSheetController extends Controller
         ->toArray();
         // ->get();
         // return $form_dean_assignments;
-        
+
 
         $this->pdf->AliasNbPages();
         $this->pdf->SetMargins(10, 10);
@@ -72,7 +72,7 @@ class MarkSheetController extends Controller
 
         foreach($data as $key => $record){
             if($key%$max_rows==0){
-                if($key!=0){                    
+                if($key!=0){
                     $this->pdf->SetY(-15);
                     $this->pdf->SetFont('Times','I',8);
                     $this->pdf->Cell(168, 6, 'Report Generated: '.date("d/m/Y h:i:sa"), 0, 0, 'L');
@@ -86,8 +86,8 @@ class MarkSheetController extends Controller
                     $max_rows = floor($rowsHeight/7);
                     //$this->pdf->AddPage('L', array($pageWidth, 215.9));
                     $this->pdf->AddPage('L', array($pageWidth, $pageHeight));
-                    
-                } 
+
+                }
                 else $this->pdf->AddPage('L', 'Legal');
                 $this->pdf->Image($logo, 10, 6, 28);
                 $this->pdf->SetFont('Times', 'B', '18');
@@ -98,7 +98,7 @@ class MarkSheetController extends Controller
                 $this->pdf->Ln(4);
 
                 $this->pdf->SetFont('Times', 'B', 12);
-                $this->pdf->MultiCell(0,6, 'CLASS SUMMARY MARK SHEET', 0, 'C');                
+                $this->pdf->MultiCell(0,6, 'CLASS SUMMARY MARK SHEET', 0, 'C');
                 $this->pdf->Ln(10);
 
                 $border=0;
@@ -110,7 +110,7 @@ class MarkSheetController extends Controller
                 $this->pdf->SetFont('Times', 'B', 12);
                 $this->pdf->Cell(24,8,'Form Dean: ',$border,0,'L');
                 $this->pdf->SetFont('Times', 'I', 12);
-                $this->pdf->Cell(70,8,implode(" / ", $form_dean_assignments),$border,0,'L');                
+                $this->pdf->Cell(70,8,implode(" / ", $form_dean_assignments),$border,0,'L');
                 $this->pdf->SetFont('Times', 'B', 12);
                 $this->pdf->Cell(30,8,'Form Teacher:',$border,0,'L');
                 $this->pdf->SetFont('Times', 'I', 12);
@@ -124,7 +124,7 @@ class MarkSheetController extends Controller
 
                 $x = $this->pdf->GetX();
                 $y = $this->pdf->GetY();
-                
+
                 $this->pdf->MultiCell(62, 35, "STUDENT'S NAME", 'TLR', 'C');
                 $this->pdf->SetXY($x+62, $y);
                 $this->pdf->SetFont('Times', 'B', 10);
@@ -139,7 +139,7 @@ class MarkSheetController extends Controller
                     $this->pdf->SetXY($x+10,$y);
                 }
                 if($distinct_subject_count < $max_cols){
-                    for($i=$distinct_subject_count; $i<$max_cols; $i++ ){                
+                    for($i=$distinct_subject_count; $i<$max_cols; $i++ ){
                         $x = $this->pdf->GetX();
                         $y = $this->pdf->GetY();
                         $this->pdf->MultiCell(10,15,'',1,'C');
@@ -158,8 +158,8 @@ class MarkSheetController extends Controller
                 }
 
                 if($distinct_subject_count < $max_cols){
-                    for($i=$distinct_subject_count; $i<$max_cols; $i++ ){                
-                        $this->pdf->Cell(10,20,"",'BR',0,'C');                
+                    for($i=$distinct_subject_count; $i<$max_cols; $i++ ){
+                        $this->pdf->Cell(10,20,"",'BR',0,'C');
                     }
                 }
                 $this->pdf->Cell(10,20,"",1,0,'C');
@@ -180,7 +180,7 @@ class MarkSheetController extends Controller
             $this->pdf->Cell(54,7,$record['name'],'TLB',0,'L',true);
             $term_marks = $record['term_marks'];
 
-            foreach($term_marks as $mark){                
+            foreach($term_marks as $mark){
                 if(
                     is_numeric($mark['exam_mark']) &&
                     $mark['exam_mark'] < $passMark
@@ -190,21 +190,21 @@ class MarkSheetController extends Controller
             }
 
             if($distinct_subject_count<$max_cols){
-                for($i=count($term_marks); $i<$max_cols; $i++ ){                
+                for($i=count($term_marks); $i<$max_cols; $i++ ){
                     $this->pdf->Cell(10,7,'',1,0,'C',true);
                 }
             }
             $this->pdf->Cell(10,7,$record['total_marks'],1,0,'C',true);
-            
+
             if($record['average'] < $passMark) $this->pdf->SetTextColor(255,0,0);
             $this->pdf->Cell(10,7,$record['average'],1,0,'R',true);
             $this->pdf->SetTextColor(0);
-            $this->pdf->Cell(10,7,$record['rank'],1,0,'C',true);
+            $this->pdf->Cell(10,7,$this->rank($averages, $record['average']),1,0,'C',true);
             $this->pdf->Cell(10,7,$record['sessions_absent'],1,0,'C',true);
             $this->pdf->Cell(10,7,$record['sessions_late'],1,0,'C',true);
-            $this->pdf->Ln();            
+            $this->pdf->Ln();
         }
-        
+
         $this->pdf->SetY(-15);
         $this->pdf->SetFont('Times','I',8);
         if(sizeof($distinct_subjects) > $max_cols){
@@ -216,7 +216,7 @@ class MarkSheetController extends Controller
             $this->pdf->Cell(168, 6, 'Report Generated: '.date("d/m/Y h:i:sa"), 0, 0, 'L');
             $this->pdf->Cell(168, 6, 'Page '.$this->pdf->PageNo().'/{nb}', 0, 0, 'R');
         }
-        
+
 
         $this->pdf->Output('I', 'Class Summary Mark Sheet.pdf');
     }
@@ -243,7 +243,7 @@ class MarkSheetController extends Controller
     private function markSheetData($year, $term, $class_id, &$averages)
     {
         $data = [];
-        
+
         $distinct_subjects = Table2::join('table1', 'table1.student_id', 'table2.student_id')
         ->join('subjects', 'subjects.id', 'table2.subject_id')
         ->select('subject_id', 'abbr')
@@ -277,9 +277,9 @@ class MarkSheetController extends Controller
         $form_level = $form_class ? $form_class->form_level : null;
 
         foreach($students_registered as $student){
-            $student_record = []; 
+            $student_record = [];
             $student_term_marks = [];
-            $total_marks = 0; 
+            $total_marks = 0;
             $total_subjects = 0;
 
             $student_id = $student->student_id;
@@ -299,21 +299,21 @@ class MarkSheetController extends Controller
                 if(!$table2_record)
                 {
                     continue;
-                } 
+                }
 
-                
+
                 $course_mark = $table2_record->course_mark;
                 $exam_mark = $table2_record->exam_mark;
                 // $mark_record['course_mark'] = is_null($course_mark) ? 'Ab' : $course_mark;
                 // $mark_record['exam_mark'] = is_null($exam_mark) ? 'Ab' : $exam_mark;
-                
+
                 if($term == 1 && (
                         $form_level == 5 ||
                         $form_level == 6 ||
                         $form_level == 7
                     )
                 ){
-                    $total_marks += is_numeric($course_mark) ? $course_mark : 0; 
+                    $total_marks += is_numeric($course_mark) ? $course_mark : 0;
                     $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' :$course_mark;
                 }
                 elseif($term == 2 && (
@@ -322,7 +322,7 @@ class MarkSheetController extends Controller
                     $form_level == 3 ||
                     $form_level == 4
                 )){
-                    $total_marks += is_numeric($course_mark) ? $course_mark : 0; 
+                    $total_marks += is_numeric($course_mark) ? $course_mark : 0;
                     $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' :$course_mark;
                 }
                 elseif($term == 2 && (
@@ -332,18 +332,18 @@ class MarkSheetController extends Controller
                     )
                 )
                 {
-                    $total_marks += is_numeric($exam_mark) ? $exam_mark : 0; 
+                    $total_marks += is_numeric($exam_mark) ? $exam_mark : 0;
                     $mark_record['exam_mark'] = is_null($exam_mark) ? 'Abs' : $exam_mark;
                 }
                 else {
-                    $total_marks += is_numeric($course_mark) ? number_format($course_mark*0.3,1) : 0; 
+                    $total_marks += is_numeric($course_mark) ? number_format($course_mark*0.3,1) : 0;
                     $total_marks += is_numeric($exam_mark) ? number_format($exam_mark*0.7,1) : 0;
                     $mark_record['exam_mark'] = is_null($course_mark) && is_null($exam_mark) ? 'Abs' : $course_mark*0.3 + $exam_mark*0.7;
                 }
 
                 $total_subjects++;
-            
-                
+
+
                 $mark_record['subject'] = $subject->abbr;
                 $mark_record['subject_id'] = $subject_id;
                 array_push($student_term_marks, $mark_record);
@@ -353,23 +353,23 @@ class MarkSheetController extends Controller
             if($average) $averages[] = $average;
             $student_record['total_marks'] = ($total_marks != 0) ? $total_marks : null;
             $student_record['average'] = $average;
-            $student_record['rank'] = $this->rank($averages, $average);
+            //$student_record['rank'] = $this->rank($averages, $average);
             $student_record['sessions_absent'] = $student->times_absent;
             $student_record['sessions_late'] = $student->times_late;
             $student_record['term_marks'] = $student_term_marks;
             $student_record['name'] = $student->last_name.', '.$student->first_name;
             array_push($data, $student_record);
         }
-
+        rsort($averages);
         return $data;
     }
 
     private function rank($averages, $rank_average)
     {
-        rsort($averages);
         foreach($averages as $index => $average){
             if($average == $rank_average ) return $index + 1;
         }
+        //return implode(',', $averages);
         return null;
     }
 
@@ -392,14 +392,14 @@ class MarkSheetController extends Controller
 
         return $form_teacher_assignments;
     }
-    
+
 
     public function download (Request $request)
-    {       
+    {
         $year = $request->year;
         $term = $request->term;
         $class_id = $request->classId;
-        $subjectMarksColStart = 8; 
+        $subjectMarksColStart = 8;
         $colStart = 7;
 
         $dataSummary = $this->spreadsheetDataSummary($year, $term, $class_id);
@@ -411,10 +411,10 @@ class MarkSheetController extends Controller
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $arrayDataHeaders = [
-            "Name", 
-            "Class", 
-            "Year", 
-            "Term", 
+            "Name",
+            "Class",
+            "Year",
+            "Term",
             "Abs",
             "Late",
             "Avg%"
@@ -422,7 +422,7 @@ class MarkSheetController extends Controller
 
         foreach($distinct_subjects as $subject){
             array_push($arrayDataHeaders, $subject->abbr);
-        }       
+        }
 
         $sheet->fromArray($arrayDataHeaders);
         $sheet->fromArray(
@@ -430,9 +430,9 @@ class MarkSheetController extends Controller
             NULL,
             'A2'
         );
-        
-        
-        $row = 1; 
+
+
+        $row = 1;
         // $oneDigitSpace = 7; $twoDigitSpace = 6; $threeDigitSpace = 5; $nullDigitSpace = 8;
         foreach($dataMarks as $markRecord){
             $col = $colStart;
@@ -443,7 +443,7 @@ class MarkSheetController extends Controller
                 // $subjectTotal = null;
 
                 $cellValue = $record["exam_mark"];
-                
+
                 // if($term == 2 && $class_id[0] <= 4)
                 // {
                 //     if(is_numeric($record["course_mark"])) $subjectTotal += $record["course_mark"];
@@ -455,22 +455,22 @@ class MarkSheetController extends Controller
                 //     if(is_numeric($record["course_mark"])) $subjectTotal += $record["course_mark"];
                 //     if(is_numeric($record["exam_mark"])) $subjectTotal += $record["exam_mark"];
                 //     if(!is_null($subjectTotal)) $subjectTotal = number_format($subjectTotal/2,0);
-    
+
                 //     $cellValue = $record["course_mark"]."   ".$record["exam_mark"]." | ".$subjectTotal;
                 //     if(is_null($subjectTotal)){
                 //         $cellValue = $record["course_mark"]."   ".$record["exam_mark"];
                 //     }
 
                 // }
-                
+
                 $sheet->setCellValue(
-                    [++$col, 
+                    [++$col,
                     $row ],
                     $cellValue
                 );
             }
         }
-        
+
 
         $highestColumn = $sheet->getHighestDataColumn();
         $highestRow = $sheet->getHighestRow();
@@ -501,7 +501,7 @@ class MarkSheetController extends Controller
             $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
             $sheet->getColumnDimension($column)->setWidth(13);
         }
-        
+
         $styleArray = [
             'font' => [
                 'bold' => true,
@@ -516,7 +516,7 @@ class MarkSheetController extends Controller
 
         // $sheet->getStyle('A1:'.$highestColumn.'1')->getFill()
         // ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-        // ->getStartColor()->setARGB('FFBFBFBF');        
+        // ->getStartColor()->setARGB('FFBFBFBF');
 
         $sheet->getStyle('A1:'.$highestColumn.'1')->applyFromArray($styleArray);
 
@@ -525,7 +525,7 @@ class MarkSheetController extends Controller
         $file = $class_id." Mark Sheet.xlsx";
         // $filePath = './files/'.$file;
         $filePath = storage_path('app/public/'.$file);
-        
+
         $writer = new Xlsx($spreadsheet);
         $writer->save($filePath);
         return response()->download($filePath, $file);
@@ -545,7 +545,7 @@ class MarkSheetController extends Controller
         ->orderBy('last_name')
         ->orderBy('first_name')
         ->get();
-        
+
         switch($term){
             case 1:
                 $term = "Term 1";
@@ -555,9 +555,9 @@ class MarkSheetController extends Controller
                 break;
             case 3:
                 $term = "Term 3";
-                break;        
+                break;
         }
-        
+
 
         foreach($students_registered as $student){
             $student_record = [];
@@ -570,11 +570,11 @@ class MarkSheetController extends Controller
             array_push($student_record, $student->times_late);
             array_push($data, $student_record);
         }
-        
+
         return $data;
     }
 
-    private function spreadsheetDataMarks ($year, $term, $class_id) 
+    private function spreadsheetDataMarks ($year, $term, $class_id)
     {
         $data = [];
 
@@ -591,12 +591,12 @@ class MarkSheetController extends Controller
         ->distinct()
         ->orderBy('abbr')
         ->get();
-            
+
         $form_class = FormClass::where('id', $class_id)
         ->first();
 
         $form_level = $form_class ? $form_class->form_level : null;
-        
+
 
         $students_registered = Table1::join('students', 'students.id', 'table1.student_id')
         ->select('student_id', 'first_name', 'last_name', 'table1.class_id')
@@ -610,16 +610,16 @@ class MarkSheetController extends Controller
         ->get();
 
         foreach($students_registered as $student){
-            $student_record = []; 
+            $student_record = [];
             $student_marks = [];
-            $total_marks = 0; 
+            $total_marks = 0;
             $total_subjects = 0;
 
             $student_id = $student->student_id;
 
             foreach($distinct_subjects as $subject)
             {
-                $mark_record = [];                
+                $mark_record = [];
                 $subject_id = $subject->subject_id;
 
                 $table2_record = Table2::where([
@@ -630,24 +630,24 @@ class MarkSheetController extends Controller
                 ])
                 ->first();
 
-                
+
                 if(!$table2_record)
                 {
                     continue;
-                } 
+                }
 
                 $course_mark = $table2_record->course_mark;
                 $exam_mark = $table2_record->exam_mark;
-                // $mark_record['course_mark'] = is_null($course_mark) ? 'Ab' : $course_mark;                   
+                // $mark_record['course_mark'] = is_null($course_mark) ? 'Ab' : $course_mark;
                 // $mark_record['exam_mark'] = is_null($exam_mark) ? 'Ab' : $exam_mark;
-                    
+
                 if($term == 1 && (
                     $form_level == 5 ||
                     $form_level == 6 ||
                     $form_level == 7
                 )
                 ){
-                    $total_marks += is_numeric($course_mark) ? $course_mark : 0; 
+                    $total_marks += is_numeric($course_mark) ? $course_mark : 0;
                     $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' : $course_mark;
                 }
 
@@ -657,7 +657,7 @@ class MarkSheetController extends Controller
                     $form_level == 3 ||
                     $form_level == 4
                 )){
-                    $total_marks += is_numeric($course_mark) ? $course_mark : 0; 
+                    $total_marks += is_numeric($course_mark) ? $course_mark : 0;
                     $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' :$course_mark;
                 }
 
@@ -668,21 +668,21 @@ class MarkSheetController extends Controller
                     )
                 )
                 {
-                    $total_marks += is_numeric($exam_mark) ? $exam_mark : 0; 
+                    $total_marks += is_numeric($exam_mark) ? $exam_mark : 0;
                     $mark_record['exam_mark'] = is_null($exam_mark) ? 'Abs' : $exam_mark;
                 }
                 else {
-                    $total_marks += is_numeric($course_mark) ? number_format($course_mark*0.3,1) : 0; 
+                    $total_marks += is_numeric($course_mark) ? number_format($course_mark*0.3,1) : 0;
                     $total_marks += is_numeric($exam_mark) ? number_format($exam_mark*0.7,1) : 0;
-                    $mark_record['exam_mark'] = is_null($course_mark) && is_null($exam_mark) ? 'Abs' : number_format($course_mark*0.3 + $exam_mark*0.7,1); 
+                    $mark_record['exam_mark'] = is_null($course_mark) && is_null($exam_mark) ? 'Abs' : number_format($course_mark*0.3 + $exam_mark*0.7,1);
                 }
 
                 $total_subjects++;
-               
+
                 array_push($student_marks, $mark_record);
             }
 
-            $average = ($total_subjects != 0) ? number_format($total_marks/$total_subjects,2) : null; 
+            $average = ($total_subjects != 0) ? number_format($total_marks/$total_subjects,2) : null;
             $student_record['average'] = $average;
             $student_record['marks'] = $student_marks;
             array_push($data, $student_record);
