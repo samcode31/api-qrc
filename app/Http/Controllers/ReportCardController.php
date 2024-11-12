@@ -742,7 +742,9 @@ class ReportCardController extends Controller
         $data = array();
         foreach($table1Records as $record){
             $studentId = $record->student_id;
-            $data[] = $this->averageMark($year, $term, $studentId, $formLevel);
+            $averageMark = $this->averageMark($year, $term, $studentId, $formLevel);
+            if(!$averageMark) continue;
+            $data [] = $averageMark;
         }
         rsort($data);
         return $data;
