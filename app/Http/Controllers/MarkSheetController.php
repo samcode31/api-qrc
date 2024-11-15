@@ -296,53 +296,50 @@ class MarkSheetController extends Controller
                 ])
                 ->first();
 
-                if(!$table2_record)
+                if($table2_record)
                 {
-                    continue;
-                }
-
-
-                $course_mark = $table2_record->course_mark;
-                $exam_mark = $table2_record->exam_mark;
-                // $mark_record['course_mark'] = is_null($course_mark) ? 'Ab' : $course_mark;
-                // $mark_record['exam_mark'] = is_null($exam_mark) ? 'Ab' : $exam_mark;
-
-                if($term == 1 && (
-                        $form_level == 5 ||
-                        $form_level == 6 ||
-                        $form_level == 7
+                    $course_mark = $table2_record->course_mark;
+                    $exam_mark = $table2_record->exam_mark;
+    
+                    if($term == 1 && (
+                            $form_level == 5 ||
+                            $form_level == 6 ||
+                            $form_level == 7
+                        )
+                    ){
+                        $total_marks += is_numeric($course_mark) ? $course_mark : 0;
+                        $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' :$course_mark;
+                    }
+                    elseif($term == 2 && (
+                        $form_level == 1 ||
+                        $form_level == 2 ||
+                        $form_level == 3 ||
+                        $form_level == 4
+                    )){
+                        $total_marks += is_numeric($course_mark) ? $course_mark : 0;
+                        $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' :$course_mark;
+                    }
+                    elseif($term == 2 && (
+                            $form_level == 5 ||
+                            $form_level == 6 ||
+                            $form_level == 7
+                        )
                     )
-                ){
-                    $total_marks += is_numeric($course_mark) ? $course_mark : 0;
-                    $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' :$course_mark;
+                    {
+                        $total_marks += is_numeric($exam_mark) ? $exam_mark : 0;
+                        $mark_record['exam_mark'] = is_null($exam_mark) ? 'Abs' : $exam_mark;
+                    }
+                    else {
+                        $total_marks += is_numeric($course_mark) ? number_format($course_mark*0.3,1) : 0;
+                        $total_marks += is_numeric($exam_mark) ? number_format($exam_mark*0.7,1) : 0;
+                        $mark_record['exam_mark'] = is_null($course_mark) && is_null($exam_mark) ? 'Abs' : $course_mark*0.3 + $exam_mark*0.7;
+                    }
+    
+                    $total_subjects++;
                 }
-                elseif($term == 2 && (
-                    $form_level == 1 ||
-                    $form_level == 2 ||
-                    $form_level == 3 ||
-                    $form_level == 4
-                )){
-                    $total_marks += is_numeric($course_mark) ? $course_mark : 0;
-                    $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' :$course_mark;
+                else{
+                    $mark_record['exam_mark'] = null;
                 }
-                elseif($term == 2 && (
-                        $form_level == 5 ||
-                        $form_level == 6 ||
-                        $form_level == 7
-                    )
-                )
-                {
-                    $total_marks += is_numeric($exam_mark) ? $exam_mark : 0;
-                    $mark_record['exam_mark'] = is_null($exam_mark) ? 'Abs' : $exam_mark;
-                }
-                else {
-                    $total_marks += is_numeric($course_mark) ? number_format($course_mark*0.3,1) : 0;
-                    $total_marks += is_numeric($exam_mark) ? number_format($exam_mark*0.7,1) : 0;
-                    $mark_record['exam_mark'] = is_null($course_mark) && is_null($exam_mark) ? 'Abs' : $course_mark*0.3 + $exam_mark*0.7;
-                }
-
-                $total_subjects++;
-
 
                 $mark_record['subject'] = $subject->abbr;
                 $mark_record['subject_id'] = $subject_id;
@@ -631,53 +628,54 @@ class MarkSheetController extends Controller
                 ->first();
 
 
-                if(!$table2_record)
+                if($table2_record)
                 {
-                    continue;
-                }
-
-                $course_mark = $table2_record->course_mark;
-                $exam_mark = $table2_record->exam_mark;
-                // $mark_record['course_mark'] = is_null($course_mark) ? 'Ab' : $course_mark;
-                // $mark_record['exam_mark'] = is_null($exam_mark) ? 'Ab' : $exam_mark;
-
-                if($term == 1 && (
-                    $form_level == 5 ||
-                    $form_level == 6 ||
-                    $form_level == 7
-                )
-                ){
-                    $total_marks += is_numeric($course_mark) ? $course_mark : 0;
-                    $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' : $course_mark;
-                }
-
-                elseif($term == 2 && (
-                    $form_level == 1 ||
-                    $form_level == 2 ||
-                    $form_level == 3 ||
-                    $form_level == 4
-                )){
-                    $total_marks += is_numeric($course_mark) ? $course_mark : 0;
-                    $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' :$course_mark;
-                }
-
-                elseif($term == 2 && (
+                    
+                    $course_mark = $table2_record->course_mark;
+                    $exam_mark = $table2_record->exam_mark;
+    
+                    if($term == 1 && (
                         $form_level == 5 ||
                         $form_level == 6 ||
                         $form_level == 7
                     )
-                )
-                {
-                    $total_marks += is_numeric($exam_mark) ? $exam_mark : 0;
-                    $mark_record['exam_mark'] = is_null($exam_mark) ? 'Abs' : $exam_mark;
+                    ){
+                        $total_marks += is_numeric($course_mark) ? $course_mark : 0;
+                        $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' : $course_mark;
+                    }
+    
+                    elseif($term == 2 && (
+                        $form_level == 1 ||
+                        $form_level == 2 ||
+                        $form_level == 3 ||
+                        $form_level == 4
+                    )){
+                        $total_marks += is_numeric($course_mark) ? $course_mark : 0;
+                        $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' :$course_mark;
+                    }
+    
+                    elseif($term == 2 && (
+                            $form_level == 5 ||
+                            $form_level == 6 ||
+                            $form_level == 7
+                        )
+                    )
+                    {
+                        $total_marks += is_numeric($exam_mark) ? $exam_mark : 0;
+                        $mark_record['exam_mark'] = is_null($exam_mark) ? 'Abs' : $exam_mark;
+                    }
+                    else {
+                        $total_marks += is_numeric($course_mark) ? number_format($course_mark*0.3,1) : 0;
+                        $total_marks += is_numeric($exam_mark) ? number_format($exam_mark*0.7,1) : 0;
+                        $mark_record['exam_mark'] = is_null($course_mark) && is_null($exam_mark) ? 'Abs' : number_format($course_mark*0.3 + $exam_mark*0.7,1);
+                    }
+    
+                    $total_subjects++;
                 }
-                else {
-                    $total_marks += is_numeric($course_mark) ? number_format($course_mark*0.3,1) : 0;
-                    $total_marks += is_numeric($exam_mark) ? number_format($exam_mark*0.7,1) : 0;
-                    $mark_record['exam_mark'] = is_null($course_mark) && is_null($exam_mark) ? 'Abs' : number_format($course_mark*0.3 + $exam_mark*0.7,1);
+                else{
+                    $mark_record['course_mark'] = "--";
+                    $mark_record['exam_mark'] = "--";
                 }
-
-                $total_subjects++;
 
                 array_push($student_marks, $mark_record);
             }

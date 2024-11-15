@@ -44,6 +44,7 @@ use App\Http\Controllers\ReportStudentNoLoginsController;
 use App\Http\Controllers\MarkBookController;
 use App\Http\Controllers\MarkBookSpreadsheetController;
 use App\Http\Controllers\CoCurricularController;
+use App\Http\Controllers\UserAdminPermissionsController;
 
 
 /*
@@ -69,6 +70,16 @@ use App\Http\Controllers\CoCurricularController;
 */
 
 Route::post('/admin', [UserController::class, 'createAdmin']);
+
+Route::post('/admin-user-2', [UserController::class, 'registerAdmin2']);
+
+Route::post('/admin-office', [UserController::class, 'registerOfficeAdmin']);
+
+Route::post('/admin-deans', [UserController::class, 'registerDeans']);
+
+Route::post('/admin-hods', [UserController::class, 'registerHODs']);
+
+Route::get('/admin-permissions', [UserAdminPermissionsController::class, 'show']);
 
 /*
 |--------------------------------------------------------------------------

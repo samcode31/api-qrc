@@ -38,13 +38,45 @@ class UserController extends Controller
         }
         return $accountsCreated;
     }
+
+    public function registerAdmin2(){
+        $user = UserAdmin::create([
+            'name' => 'HGreendige',
+            'password' => Hash::make('h16560g.')
+        ]);
+    }
+
+    public function registerOfficeAdmin(){
+        $user = UserAdmin::create([
+            'name' => 'OfficeAdmin',
+            'password' => Hash::make('Off1ce@dmin')
+        ]);
+    }
+
+    public function registerDeans(){
+        $user = UserAdmin::create([
+            'name' => 'Deans',
+            'password' => Hash::make('QRCD3@ns')
+        ]);
+    }
+
+    public function registerHODs(){
+        $user = UserAdmin::create([
+            'name' => 'HODs',
+            'password' => Hash::make('QRCH0D$')
+        ]);
+    }
     
     public function createAdmin () 
     {
-        $user = UserAdmin::create([
-            'name' => 'Admin',
-            'password' => Hash::make(config('app.admin_password'))
-        ]);
+        $user = UserAdmin::updateOrcreate(
+            [
+                'name' => 'Admin',
+            ],
+            [
+                'password' => Hash::make(config('app.admin_password'))
+            ]
+        );
 
         return $user;
     }

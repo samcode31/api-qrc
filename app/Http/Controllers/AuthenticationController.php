@@ -19,7 +19,7 @@ class AuthenticationController extends Controller
 
         if(Auth::guard('admin')->attempt($credentials)){
             //Authentication...
-            return 'Authorized';
+            return UserAdmin::where('name', $request->name)->first();
         }
         else{
             throw ValidationException::withMessages([
