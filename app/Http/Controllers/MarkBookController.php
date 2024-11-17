@@ -106,8 +106,8 @@ class MarkBookController extends Controller
                     ['subject_id', $subjectId]
                 ])
                 ->where(function($query) use ($employeeId) {
-                    return $query->whereNull('employee_id')
-                                ->orWhere('employee_id', $employeeId);
+                    return $query->whereNull('employee_id');
+                                // ->orWhere('employee_id', $employeeId);
                 })
                 ->select(
                     'students.id',

@@ -85,8 +85,8 @@ class Table2Controller extends Controller
                 ['student_subjects.subject_id', $subjectId]
             ])
             ->where(function ($query) use ($employeeId) {
-                $query->where('student_subjects.employee_id', $employeeId)
-                      ->orWhereNull('student_subjects.employee_id');
+                $query->where('student_subjects.employee_id', $employeeId);
+                    //   ->orWhereNull('student_subjects.employee_id');
             })
             ->orderBy('last_name')
             ->orderBy('first_name')
