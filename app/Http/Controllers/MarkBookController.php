@@ -72,7 +72,12 @@ class MarkBookController extends Controller
 
         $data['assesments'] = $assesments;
 
-        if($formLevel < 4){
+        if(
+            $formLevel == 1 ||
+            $formLevel == 2 ||
+            $formLevel == 3
+            )
+        {
             if(
                 $term == $currentAcademicTerm && 
                 $academicYearId == $currentAcademicYearId
@@ -91,7 +96,12 @@ class MarkBookController extends Controller
                 //previous term course marks
             }            
         }
-        elseif($formLevel < 6)
+        elseif(
+            $formLevel == 4 ||
+            $formLevel == 5 ||
+            $formLevel == 6 ||
+            $formLevel == 7
+        )
         {
             if(
                 $term == $currentAcademicTerm && 
