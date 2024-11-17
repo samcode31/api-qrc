@@ -91,7 +91,8 @@ class MarkBookController extends Controller
                 //previous term course marks
             }            
         }
-        elseif($formLevel < 6){
+        elseif($formLevel < 6)
+        {
             if(
                 $term == $currentAcademicTerm && 
                 $academicYearId == $currentAcademicYearId
@@ -106,8 +107,8 @@ class MarkBookController extends Controller
                     ['subject_id', $subjectId]
                 ])
                 ->where(function($query) use ($employeeId) {
-                    return $query->whereNull('employee_id');
-                                // ->orWhere('employee_id', $employeeId);
+                    return $query->where('employee_id', $employeeId);
+                                // ->orWhereNull('employee_id');
                 })
                 ->select(
                     'students.id',
@@ -137,8 +138,8 @@ class MarkBookController extends Controller
                     ['subject_id', $subjectId]
                 ])
                 ->where(function($query) use ($employeeId) {
-                    return $query->whereNull('employee_id')
-                                ->orWhere('employee_id', $employeeId);
+                    return $query->where('employee_id', $employeeId);
+                                // ->orWhereNull('employee_id');
                 })
                 ->select(
                     'students.id',
