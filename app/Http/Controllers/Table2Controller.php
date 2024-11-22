@@ -61,7 +61,7 @@ class Table2Controller extends Controller
         ->orderBy('first_name')
         ->get();
 
-        if($formLevel >= 4)
+        if($formLevel >= 4 && $employeeId)
         {
             $studentsRegistered = Table1::join(
                 'student_subjects',
@@ -88,6 +88,35 @@ class Table2Controller extends Controller
                 $query->where('student_subjects.employee_id', $employeeId);
                     //   ->orWhereNull('student_subjects.employee_id');
             })
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get();
+            
+        }
+
+        if($formLevel >= 4 && !$employeeId)
+        {
+            $studentsRegistered = Table1::join(
+                'student_subjects',
+                'student_subjects.student_id',
+                'table1.student_id'
+            )
+            ->join(
+                'students',
+                'students.id',
+                'table1.student_id'
+            )
+            ->select(
+                'students.first_name',
+                'students.last_name',
+                'table1.*'
+            )
+            ->where([
+                ['table1.class_id', $classId],
+                ['table1.year', $year],
+                ['table1.term', $term],
+                ['student_subjects.subject_id', $subjectId]
+            ])
             ->orderBy('last_name')
             ->orderBy('first_name')
             ->get();
