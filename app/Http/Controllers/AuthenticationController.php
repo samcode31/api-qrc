@@ -107,4 +107,11 @@ class AuthenticationController extends Controller
             ]);
         }
     }
+
+    public function logout(Request $request){
+        Auth::guard('student')->logout();
+        Auth::guard('admin')->logout();
+        Auth::guard('employee')->logout();
+        // return redirect()->route('login');
+    }
 }

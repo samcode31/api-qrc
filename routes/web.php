@@ -33,3 +33,5 @@ Route::middleware([
         return Inertia::render('Dashboard');
     })->name('dashboard');
 });
+
+Route::post('/logout', [App\Http\Controllers\AuthenticationController::class, 'logout'])->name('logout');

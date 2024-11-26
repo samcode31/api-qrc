@@ -26,6 +26,8 @@ class Table2Controller extends Controller
         $term = $request->term;
         $subjectId = $request->subject_id;
         $employeeId = $request->employee_id;
+        $formClasses = $request->form_classes;
+        $formLevel = $request->form_level;
 
         $table2Records = [];
         $data = [];
@@ -33,7 +35,8 @@ class Table2Controller extends Controller
         $registered = 0;
         $entered = 0;
         
-        $formLevel = FormClass::whereId($classId)->first()->form_level;
+        // $formClassRecord = FormClass::whereId($classId)->first();
+        // $formLevel = $formClassRecord ? $formClassRecord->form_level : null;
         
         $classTotal = Table1::where([
             ['class_id', $classId],
@@ -52,8 +55,8 @@ class Table2Controller extends Controller
             'students.last_name',
             'table1.*'
         )
+        ->whereIn('table1.class_id', $formClasses)
         ->where([
-            ['table1.class_id', $classId],
             ['year', $year],
             ['term', $term]
         ])
@@ -78,8 +81,8 @@ class Table2Controller extends Controller
                 'students.last_name',
                 'table1.*'
             )
+            ->whereIn('table1.class_id', $formClasses)
             ->where([
-                ['table1.class_id', $classId],
                 ['table1.year', $year],
                 ['table1.term', $term],
                 ['student_subjects.subject_id', $subjectId]
@@ -94,6 +97,7 @@ class Table2Controller extends Controller
             
         }
 
+        // Admin login
         if($formLevel >= 4 && !$employeeId)
         {
             $studentsRegistered = Table1::join(
@@ -111,8 +115,8 @@ class Table2Controller extends Controller
                 'students.last_name',
                 'table1.*'
             )
+            ->whereIn('table1.class_id', $formClasses)
             ->where([
-                ['table1.class_id', $classId],
                 ['table1.year', $year],
                 ['table1.term', $term],
                 ['student_subjects.subject_id', $subjectId]
@@ -128,14 +132,7 @@ class Table2Controller extends Controller
         foreach($studentsRegistered as $student)
         {
             $registered++;                
-            // $courseMarkRecord = $this->getCourseMark(
-            //     $student->student_id, 
-            //     $academicYearId, 
-            //     $term, 
-            //     $subjectId, 
-            //     $employeeId, 
-            //     $classId
-            // );
+           
             $studentId = $student->student_id;
             
             $studentMarkRecord = new Table2;
@@ -152,7 +149,7 @@ class Table2Controller extends Controller
             $studentMarkRecord->app = null; 
             $studentMarkRecord->con = null; 
             $studentMarkRecord->employee_id = null;
-            $studentMarkRecord->class_id = $classId;                    
+            $studentMarkRecord->class_id = $student->class_id;                    
             
             $table2Record = Table2::where([
                 ['student_id', $studentId],

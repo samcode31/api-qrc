@@ -26,12 +26,11 @@ class MarkBookController extends Controller
         $subjectId = $request->subject_id;
         $formLevel = $request->form_level;
         $formClassId = $request->form_class_id;
-        $employeeId = $request->employee_id;    
+        $employeeId = $request->employee_id; 
+        $formClasses = $request->form_classes;   
 
         $data = []; 
-        
         $students = [];
-
         $defaultAssignments = 5;
 
         $academicTermRecord = AcademicTerm::where('is_current', 1)
@@ -45,22 +44,27 @@ class MarkBookController extends Controller
             ['academic_year_id', $academicYearId],
             ['term', $term],
             ['subject_id', $subjectId],
-            ['form_class_id', $formClassId],
+            // ['form_class_id', $formClassId],
             ['employee_id', $employeeId]
-        ])->get();
+        ])
+        ->whereIn('form_class_id', $formClasses)
+        ->get();
 
-        if(sizeof($assesments) === 0){
+        if(sizeof($assesments) === 0)
+        {
             //no assesments exist for term create first one
-            $assesments[0] = AssesmentEmployeeAssignment::firstOrCreate(
-                [
-                    'academic_year_id' => $academicYearId,
-                    'term' => $term,
-                    'subject_id' => $subjectId,
-                    'form_class_id' => $formClassId,
-                    'employee_id' => $employeeId,
-                    'assesment_number' => 1
-                ]
-            );
+            foreach($formClasses as $formClassId){
+                $assesments[] = AssesmentEmployeeAssignment::firstOrCreate(
+                    [
+                        'academic_year_id' => $academicYearId,
+                        'term' => $term,
+                        'subject_id' => $subjectId,
+                        'form_class_id' => $formClassId,
+                        'employee_id' => $employeeId,
+                        'assesment_number' => 1
+                    ]
+                );
+            }
         }
         else{
             foreach($assesments as $assesment){
@@ -82,11 +86,12 @@ class MarkBookController extends Controller
                 $term == $currentAcademicTerm && 
                 $academicYearId == $currentAcademicYearId
             ){
-                $students = Student::where('class_id', $formClassId)
+                $students = Student::whereIn('class_id', $formClasses)
                 ->select(
                     'id',
                     'first_name',
-                    'last_name'
+                    'last_name',
+                    'class_id'
                 )
                 ->orderBy('last_name')
                 ->orderBy('first_name')
@@ -110,10 +115,11 @@ class MarkBookController extends Controller
                 $students = Student::join(
                     'student_subjects',
                     'student_subjects.student_id',
-                    'students.id'
+                    'students.id',
+                    'students.class_id'
                 )
+                ->whereIn('class_id', $formClasses)
                 ->where([
-                    ['class_id', $formClassId],
                     ['subject_id', $subjectId]
                 ])
                 ->where(function($query) use ($employeeId) {
@@ -123,7 +129,8 @@ class MarkBookController extends Controller
                 ->select(
                     'students.id',
                     'first_name',
-                    'last_name'
+                    'last_name',
+                    'class_id'
                 )
                 ->orderBy('last_name')
                 ->orderBy('first_name')
@@ -133,46 +140,60 @@ class MarkBookController extends Controller
                 //previous term course marks
             }        
         }
-        else{
-            if(
-                $term == $currentAcademicTerm && 
-                $academicYearId == $currentAcademicYearId
-            ){
-                $students = Student::join(
-                    'student_subjects',
-                    'student_subjects.student_id',
-                    'students.id'
-                )
-                ->where([
-                    ['class_id', 'like', $formClassId.'%'],
-                    ['subject_id', $subjectId]
-                ])
-                ->where(function($query) use ($employeeId) {
-                    return $query->where('employee_id', $employeeId);
-                                // ->orWhereNull('employee_id');
-                })
-                ->select(
-                    'students.id',
-                    'first_name',
-                    'last_name'
-                )
-                ->orderBy('last_name')
-                ->orderBy('first_name')
-                ->get();
-            }
-            else{
-                //previous term course marks
-            }     
-        }
+        // else{
+        //     if(
+        //         $term == $currentAcademicTerm && 
+        //         $academicYearId == $currentAcademicYearId
+        //     ){
+        //         $students = Student::join(
+        //             'student_subjects',
+        //             'student_subjects.student_id',
+        //             'students.id'
+        //         )
+        //         ->where([
+        //             ['class_id', 'like', $formClassId.'%'],
+        //             ['subject_id', $subjectId]
+        //         ])
+        //         ->where(function($query) use ($employeeId) {
+        //             return $query->where('employee_id', $employeeId);
+        //                         // ->orWhereNull('employee_id');
+        //         })
+        //         ->select(
+        //             'students.id',
+        //             'first_name',
+        //             'last_name'
+        //         )
+        //         ->orderBy('last_name')
+        //         ->orderBy('first_name')
+        //         ->get();
+        //     }
+        //     else{
+        //         //previous term course marks
+        //     }     
+        // }
 
         foreach($students as $student){
-            AssesmentCourse::firstOrCreate(
-                [
-                    'student_id' => $student->id,
-                    'assesment_employee_assignment_id' => $assesments[0]->id,
-                ],
-            );
+            
+            //creates a default course for the student
+            $assesmentEmployeeAssignmentRecord = AssesmentEmployeeAssignment::where([
+                ['academic_year_id', $academicYearId],
+                ['term', $term],
+                ['subject_id', $subjectId],
+                ['form_class_id', $student->class_id],
+            ])->first();
 
+            if($assesmentEmployeeAssignmentRecord)
+            {
+                AssesmentCourse::firstOrCreate(
+                    [
+                        'student_id' => $student->id,
+                        'assesment_employee_assignment_id' => $assesmentEmployeeAssignmentRecord->id,
+                    ],
+                    
+                );
+
+            }
+            
             $marks = [];
 
             for($i = 1; $i <=$defaultAssignments; $i++){
@@ -184,7 +205,7 @@ class MarkBookController extends Controller
                 )
                 ->where([
                     ['student_id', $student->id],
-                    ['form_class_id', $formClassId],
+                    ['form_class_id', $student->class_id],
                     ['academic_year_id', $academicYearId],
                     ['term', $term],
                     ['subject_id', $subjectId],
@@ -272,13 +293,18 @@ class MarkBookController extends Controller
 
         foreach($assesments as $assesment)
         {
-            $courseMarkTotal += $assesment->total;
+            
 
             $assesmentCourseRecord = AssesmentCourse::where([
                 ['assesment_employee_assignment_id', $assesment->id],
                 ['student_id', $studentId],
             ])
             ->first();
+
+            if($assesmentCourseRecord)
+            {
+                $courseMarkTotal += $assesment->total;
+            }
 
             $courseMark += $assesmentCourseRecord ? $assesmentCourseRecord->mark : 0;
             
@@ -302,22 +328,31 @@ class MarkBookController extends Controller
 
     public function storeAssesment (Request $request)
     {
-        return AssesmentEmployeeAssignment::updateOrCreate(
-            [
-                'employee_id' => $request->employee_id,
-                'academic_year_id' => $request->academic_year_id,
-                'term' => $request->term,
-                'subject_id' => $request->subject_id,
-                'assesment_number' => $request->assesment_number,
-                'form_class_id' => $request->form_class_id,
-            ],
-            [
-                'date' => $request->date,
-                'topic' => $request->topic,
-                'total' => $request->total,
-                'weighting' => $request->weighting
-            ]
-        );
+        $data = array();
+        
+        $formClasses = $request->form_classes;
+        
+        foreach($formClasses as $formClassId)
+        {
+            $data[] = AssesmentEmployeeAssignment::updateOrCreate(
+               [
+                   'employee_id' => $request->employee_id,
+                   'academic_year_id' => $request->academic_year_id,
+                   'term' => $request->term,
+                   'subject_id' => $request->subject_id,
+                   'assesment_number' => $request->assesment_number,
+                   'form_class_id' => $formClassId,
+               ],
+               [
+                   'date' => $request->date,
+                   'topic' => $request->topic,
+                   'total' => $request->total,
+                   'weighting' => $request->weighting
+               ]
+           );
+        }
+
+        return $data;
     }
 
     public function download (Request $request)
