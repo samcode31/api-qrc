@@ -245,6 +245,8 @@ Route::post('/update-table2', [Table2Controller::class, 'update']);
 
 Route::get('/co-curriculars', [CoCurricularController::class, 'show']);
 
+Route::post('/change-class', [Table1Controller::class, 'changeClass']);
+
 /*
 |--------------------------------------------------------------------------
 | Reports
