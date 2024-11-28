@@ -310,7 +310,8 @@ class MarkBookController extends Controller
             
         }
 
-        $courseMark = $courseMark ?  number_format(($courseMark/$courseMarkTotal)*100, 0) : null;
+        // $courseMark = $courseMark ?  number_format(($courseMark/$courseMarkTotal)*100, 1) : null;
+        $courseMark = $courseMark ?  ($courseMark/$courseMarkTotal)*100 : null;
 
         Table2::updateOrCreate(
             [
