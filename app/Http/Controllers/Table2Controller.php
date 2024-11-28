@@ -129,6 +129,8 @@ class Table2Controller extends Controller
         //lower school
         $total = $classTotal->count();
 
+        // return $studentsRegistered;
+
         foreach($studentsRegistered as $student)
         {
             $registered++;                
@@ -136,11 +138,6 @@ class Table2Controller extends Controller
             $studentId = $student->student_id;
             
             $studentMarkRecord = new Table2;
-            $studentMarkRecord->student_id = $studentId;
-            $studentMarkRecord->year = $year;
-            $studentMarkRecord->term = $term;                    
-            $studentMarkRecord->test = "End of Term";                    
-            $studentMarkRecord->subject_id = $subjectId;                    
             $studentMarkRecord->exam_mark = null;                    
             $studentMarkRecord->course_mark = null;                                       
             $studentMarkRecord->late = 0;                    
@@ -149,7 +146,6 @@ class Table2Controller extends Controller
             $studentMarkRecord->app = null; 
             $studentMarkRecord->con = null; 
             $studentMarkRecord->employee_id = null;
-            $studentMarkRecord->class_id = $student->class_id;                    
             
             $table2Record = Table2::where([
                 ['student_id', $studentId],
@@ -163,6 +159,13 @@ class Table2Controller extends Controller
                 $studentMarkRecord = $table2Record;
                 $entered++;
             }
+
+            $studentMarkRecord->student_id = $studentId;
+            $studentMarkRecord->year = $year;
+            $studentMarkRecord->term = $term;                    
+            $studentMarkRecord->test = "End of Term";                    
+            $studentMarkRecord->subject_id = $subjectId;                    
+            $studentMarkRecord->class_id = $student->class_id;    
 
             // if($table2Record && strtotime($table2Record->updated_at) < $courseMarkRecord['updated_at'])
             // {
