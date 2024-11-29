@@ -248,13 +248,15 @@ class MarkBookController extends Controller
 
         $assementEmployeeAssignmentId = $assesment->id;
 
+        $mark = $request->mark === '' ? null : $request->mark;
+
         $assesmentCourse = AssesmentCourse::updateOrCreate(
             [
                 'student_id' => $request->student_id,
                 'assesment_employee_assignment_id' => $assementEmployeeAssignmentId
             ],
             [
-                'mark' => $request->mark,                
+                'mark' => $mark,                
             ]
         );
 
@@ -301,17 +303,17 @@ class MarkBookController extends Controller
             ])
             ->first();
 
-            if($assesmentCourseRecord)
-            {
-                $courseMarkTotal += $assesment->total;
-            }
+            if(!$assesmentCourseRecord || $assesmentCourseRecord->mark === null) continue;
+
+            $courseMarkTotal += $assesment->total;
 
             $courseMark += $assesmentCourseRecord ? $assesmentCourseRecord->mark : 0;
             
         }
 
         // $courseMark = $courseMark ?  number_format(($courseMark/$courseMarkTotal)*100, 1) : null;
-        $courseMark = $courseMark ?  ($courseMark/$courseMarkTotal)*100 : null;
+        $courseMark = $courseMarkTotal ?  ($courseMark/$courseMarkTotal)*100 : null;
+        //$courseMark = $courseMarkTotal;
 
         Table2::updateOrCreate(
             [
