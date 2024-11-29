@@ -45,6 +45,7 @@ use App\Http\Controllers\MarkBookController;
 use App\Http\Controllers\MarkBookSpreadsheetController;
 use App\Http\Controllers\CoCurricularController;
 use App\Http\Controllers\UserAdminPermissionsController;
+use App\Http\Controllers\DBFixController;
 
 
 /*
@@ -344,6 +345,14 @@ Route::post('/upload-course-assesment', [FileUploadController::class, 'uploadCou
 Route::post('/delete-course-assesment', [MarkBookController::class, 'deleteCourseAssesment']); 
 
 Route::get('/academic-terms', [AcademicTermController::class, 'showAll']);
+
+/*
+|--------------------------------------------------------------------------
+| DB Fixes Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/fix-course-marks', [DbFixController::class, 'fixCourseMark']);
 
 
 
