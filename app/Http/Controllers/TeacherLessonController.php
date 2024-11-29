@@ -6,6 +6,7 @@ use App\Models\TeacherLesson;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
+use App\Models\AcademicTerm;
 
 class TeacherLessonController extends Controller
 {
@@ -67,6 +68,22 @@ class TeacherLessonController extends Controller
         }
         //return $spreadsheet->getActiveSheet()->getHighestDataRow();
         return $records;
+    }
+
+    public function musicClasses (Request $request)
+    {
+        $employeeId = $request->employee_id;
+        $academicTermRecord = AcademicTerm::where('is_current', 1)->first();
+        $academicYearId = $academicTermRecord ? $academicTermRecord->academic_year_id : null;
+
+        $lessons = TeacherLesson::where([
+            ['academic_year_id', $academicYearId],
+            ['employee_id', $employeeId],
+            ['subject_id', 29]
+        ])
+        ->get();
+
+        return $lessons;
     }
    
 }

@@ -248,6 +248,9 @@ Route::get('/co-curriculars', [CoCurricularController::class, 'show']);
 
 Route::post('/change-class', [Table1Controller::class, 'changeClass']);
 
+Route::get('/music-classes', [TeacherLessonController::class, 'musicClasses']);
+
+
 /*
 |--------------------------------------------------------------------------
 | Reports
