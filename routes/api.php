@@ -234,6 +234,8 @@ Route::post('/import-weekly-tests', [Table2Controller::class, 'importAssesments'
 */
 Route::get('/form-classes', [Table1Controller::class, 'formClasses']);
 
+Route::get('/form-classes-change-class', [Table1Controller::class, 'formClassesChangeClass']);
+
 Route::get('/students-registered', [Table1Controller::class, 'show']);
 
 Route::get('/student-table2-records', [Table2Controller::class, 'studentRecords']);

@@ -159,6 +159,11 @@ class Table1Controller extends Controller
         return ResourcesTable1::collection($records);
     }
 
+    public function formClassesChangeClass ()
+    {
+        return FormClass::all();
+    }
+
     public function cmp($a, $b)
     {
         return strcmp($a->last_name, $b->last_name);
