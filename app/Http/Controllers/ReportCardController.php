@@ -21,6 +21,7 @@ class ReportCardController extends Controller
     public function __construct(\App\Models\Pdf $pdf)
     {
         $this->pdf = $pdf;
+
     }
 
     public function show(Request $request)
@@ -189,6 +190,7 @@ class ReportCardController extends Controller
             $this->pdf->SetMargins(10, 8);
             $this->pdf->SetAutoPageBreak(false);              
             $this->pdf->AddPage('P', 'Legal');
+            //$this->waterMark();
             //$this->pdf->SetDisplayMode('fullpage', 'single');
             $this->pdf->Image($logo, 10, 8, 30);
             $this->pdf->SetFont('Times', 'B', '16');       
@@ -429,7 +431,7 @@ class ReportCardController extends Controller
                 $subject = $record->title;
                 $subject_id = $record->subject_id;
 
-                $this->pdf->Row(array(
+                $this->pdf->ReportCardRow(array(
                     $subject, 
                     $course_mark, 
                     $exam_mark, 
@@ -447,7 +449,7 @@ class ReportCardController extends Controller
             $this->pdf->SetWidths(array(40, 45, 12, 12, 12, 12, 62.9));
             $this->pdf->SetAligns(array('L', 'C', 'C', 'C', 'C', 'C', 'L'));
 
-            $this->pdf->Row(array(
+            $this->pdf->ReportCardRow(array(
                 'Music', 
                 "Grade \t\t".$mGrade,
                 $mLate, 
@@ -458,6 +460,8 @@ class ReportCardController extends Controller
             ));   
             
             $this->pdf->Ln(3);
+            $y=$this->pdf->GetY();
+            //$this->pdf->Cell(0, 6, $this->pdf->CustomPageBreakTrigger()."  y".$y, 1, 0, 'C');
 
             $border=1;
             $this->pdf->Cell(65.3, 5, "Attitude to Authority : ".$auth, $border, 0, 'L');
@@ -468,12 +472,12 @@ class ReportCardController extends Controller
             $this->pdf->SetWidths(array(40, 155.9));
             $this->pdf->SetAligns(array('L', 'L'));
 
-            $this->pdf->Row(array(
+            $this->pdf->ReportCardRow(array(
                 'Co-Curricular Activities: ',
                 $coCurricular
             )); 
             
-            $this->pdf->Row(array(
+            $this->pdf->ReportCardRow(array(
                 "Form Teacher's Remarks:",
                 $formTeacherComments
             ), false, "LTR");
@@ -485,7 +489,7 @@ class ReportCardController extends Controller
             $this->pdf->SetFont('Times', '', 10);
             $this->pdf->Ln();
             
-            $this->pdf->Row(array(
+            $this->pdf->ReportCardRow(array(
                 "Form Dean's Remarks:",
                 $formDeanComments
             ), false, "LTR");  
@@ -515,20 +519,7 @@ class ReportCardController extends Controller
             $this->pdf->Cell(0,5,'','LBR');            
         
             
-            $x=10; $y=-10; $size=40;
-            
-            for($i=1; $i<= 12; $i++){
-                $this->pdf->Image($waterMarkLogo, $x, -10, $size);
-                $this->pdf->Image($waterMarkLogo, $x, 30, $size);
-                $this->pdf->Image($waterMarkLogo, $x, 70, $size);
-                $this->pdf->Image($waterMarkLogo, $x, 110, $size);
-                $this->pdf->Image($waterMarkLogo, $x, 150, $size);
-                $this->pdf->Image($waterMarkLogo, $x, 190, $size);
-                $this->pdf->Image($waterMarkLogo, $x, 230, $size);
-                $this->pdf->Image($waterMarkLogo, $x, 270, $size);
-                $this->pdf->Image($waterMarkLogo, $x, 310, $size);
-                $x += $size+10;            
-            }
+           $this->waterMark();
     
             $this->pdf->SetFillColor(255,255,255);
             //$this->pdf->Rect(0,0, 215.9, 10, 'F');
@@ -549,6 +540,27 @@ class ReportCardController extends Controller
         $this->pdf->Output('I', 'ReportCard.pdf');
         exit;
     }
+
+    private function waterMark ()
+    {
+        $waterMarkLogo = public_path('/imgs/logo-report.png');
+        $x=10; 
+        $y=-10; 
+        $size=40;
+            
+        for($i=1; $i<= 12; $i++){
+            $this->pdf->Image($waterMarkLogo, $x, -10, $size);
+            $this->pdf->Image($waterMarkLogo, $x, 30, $size);
+            $this->pdf->Image($waterMarkLogo, $x, 70, $size);
+            $this->pdf->Image($waterMarkLogo, $x, 110, $size);
+            $this->pdf->Image($waterMarkLogo, $x, 150, $size);
+            $this->pdf->Image($waterMarkLogo, $x, 190, $size);
+            $this->pdf->Image($waterMarkLogo, $x, 230, $size);
+            $this->pdf->Image($waterMarkLogo, $x, 270, $size);
+            $this->pdf->Image($waterMarkLogo, $x, 310, $size);
+            $x += $size+10;            
+        }
+}
 
     public function data ($studentId, $year, $term, $classId)
     {
