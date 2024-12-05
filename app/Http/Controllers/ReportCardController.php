@@ -212,7 +212,7 @@ class ReportCardController extends Controller
             $this->pdf->SetFont('Times', 'B', 11);
             $this->pdf->Cell(49, 6, 'Student', $border, 0, 'L');
             $this->pdf->Cell(69, 6, $name, $border, 0, 'L');
-            $this->pdf->Cell(49, 6, 'Assesment', $border, 0, 'L');
+            $this->pdf->Cell(49, 6, 'Assessment', $border, 0, 'L');
             $this->pdf->Cell(28.9, 6, 'Term '.$term, $border, 0, 'L');
             $this->pdf->Ln();
 
