@@ -185,7 +185,8 @@ class MarkSheetController extends Controller
                     is_numeric($mark['exam_mark']) &&
                     $mark['exam_mark'] < $passMark
                 ) $this->pdf->SetTextColor(255,0,0);
-                $this->pdf->Cell(10,7,$mark['exam_mark'],1,0,'C',true);
+                $mark = is_numeric($mark['exam_mark']) ? number_format($mark['exam_mark'],1) : $mark['exam_mark'];
+                $this->pdf->Cell(10,7,$mark,1,0,'C',true);
                 $this->pdf->SetTextColor(0,0);
             }
 
@@ -308,7 +309,7 @@ class MarkSheetController extends Controller
                         )
                     ){
                         $total_marks += is_numeric($course_mark) ? $course_mark : 0;
-                        $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' :$course_mark;
+                        $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' : $course_mark;
                     }
                     elseif($term == 2 && (
                         $form_level == 1 ||
@@ -317,7 +318,7 @@ class MarkSheetController extends Controller
                         $form_level == 4
                     )){
                         $total_marks += is_numeric($course_mark) ? $course_mark : 0;
-                        $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' :$course_mark;
+                        $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' : $course_mark;
                     }
                     elseif($term == 2 && (
                             $form_level == 5 ||
