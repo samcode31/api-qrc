@@ -190,6 +190,8 @@ class ReportCardController extends Controller
             $this->pdf->SetMargins(10, 8);
             $this->pdf->SetAutoPageBreak(false);              
             $this->pdf->AddPage('P', 'Legal');
+            $this->pdf->setWaterMark($waterMarkLogo, 40);
+            
             //$this->waterMark();
             //$this->pdf->SetDisplayMode('fullpage', 'single');
             $this->pdf->Image($logo, 10, 8, 30);
@@ -450,15 +452,17 @@ class ReportCardController extends Controller
             $this->pdf->SetAligns(array('L', 'C', 'C', 'C', 'C', 'C', 'L'));
 
             
-            $this->pdf->ReportCardRow(array(
-                'Music', 
-                "Grade \t\t".$mGrade,
-                $mLate, 
-                $mAbs, 
-                $mApp,
-                $mCon,
-                $mComments,
-            ));   
+            if($form_level < 4){
+                $this->pdf->ReportCardRow(array(
+                    'Music', 
+                    "Grade \t\t".$mGrade,
+                    $mLate, 
+                    $mAbs, 
+                    $mApp,
+                    $mCon,
+                    $mComments,
+                ));   
+            }
             
             $this->pdf->Ln(3);
             $y=$this->pdf->GetY();
@@ -500,6 +504,8 @@ class ReportCardController extends Controller
             $this->pdf->Cell(0, 6, implode(" & ", $formDeans), "LBR", 0, 'L');
             $this->pdf->SetFont('Times', '', 10);
             $this->pdf->Ln(8);
+
+            
     
             $border=0;
             $this->pdf->SetDash(0.5,1);
@@ -542,26 +548,22 @@ class ReportCardController extends Controller
         exit;
     }
 
-    private function waterMark ()
+    private function waterMark()
     {
         $waterMarkLogo = public_path('/imgs/logo-report.png');
-        $x=10; 
-        $y=-10; 
-        $size=40;
-            
-        for($i=1; $i<= 12; $i++){
-            $this->pdf->Image($waterMarkLogo, $x, -10, $size);
-            $this->pdf->Image($waterMarkLogo, $x, 30, $size);
-            $this->pdf->Image($waterMarkLogo, $x, 70, $size);
-            $this->pdf->Image($waterMarkLogo, $x, 110, $size);
-            $this->pdf->Image($waterMarkLogo, $x, 150, $size);
-            $this->pdf->Image($waterMarkLogo, $x, 190, $size);
-            $this->pdf->Image($waterMarkLogo, $x, 230, $size);
-            $this->pdf->Image($waterMarkLogo, $x, 270, $size);
-            $this->pdf->Image($waterMarkLogo, $x, 310, $size);
-            $x += $size+10;            
+        $size = 40; // Size of the watermark image
+        $xSpacing = $size + 10; // Horizontal spacing between images
+        $ySpacing = $size + 10; // Vertical spacing between images
+        $pageWidth = $this->pdf->GetPageWidth(); // Get the page width
+        $pageHeight = $this->pdf->GetPageHeight(); // Get the page height
+
+        for ($y = -10; $y < $pageHeight; $y += $ySpacing) {
+            for ($x = 10; $x < $pageWidth; $x += $xSpacing) {
+                $this->pdf->Image($waterMarkLogo, $x, $y, $size);
+            }
         }
-}
+    }
+
 
     public function data ($studentId, $year, $term, $classId)
     {

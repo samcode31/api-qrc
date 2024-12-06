@@ -10,6 +10,8 @@ class Pdf extends Fpdf
 {
     public $widths;
     public $aligns;
+    private $waterMarkLogo;
+    private $waterMarkSize;
 
     public function SetWidths($w)
     {
@@ -21,6 +23,12 @@ class Pdf extends Fpdf
     {
         //Set the array of column alignments
         $this->aligns=$a;
+    }
+
+    public function SetWaterMark($logo, $size)
+    {
+        $this->waterMarkLogo = $logo;
+        $this->waterMarkSize = $size;
     }
 
     public function Row($data, $fill=false, $border=1)
@@ -134,11 +142,13 @@ class Pdf extends Fpdf
         $this->Ln($h);
     }
 
-    private function CheckPageBreakReportCard($h)
+    public function CheckPageBreakReportCard($h)
     {
         //If the height h would cause an overflow, add a new page immediately
-        if($this->GetY()+$h>320)
+        if($this->GetY()+$h>310){
+            $this->addWatermark();
             $this->AddPage($this->CurOrientation, 'Legal');
+        }
     }
 
     private function CheckPageBreak($h)
@@ -273,6 +283,25 @@ class Pdf extends Fpdf
         $this->Rotate($angle,$x,$y);
         $this->Image($file,$x,$y,$w,$h);
         $this->Rotate(0);
+    }
+
+    // Method to add watermark
+    private function addWatermark()
+    {
+        $x = 10;
+        $y = -10;
+        $size = $this->waterMarkSize;
+
+        // Get the page width and height
+        $pageWidth = $this->GetPageWidth();
+        $pageHeight = $this->GetPageHeight();
+
+        // Place the watermark across the page dynamically
+        for ($y = -10; $y < $pageHeight; $y += $size + 10) {
+            for ($x = 10; $x < $pageWidth; $x += $size + 10) {
+                $this->Image($this->waterMarkLogo, $x, $y, $size);
+            }
+        }
     }
 
 }
