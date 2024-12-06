@@ -10,7 +10,7 @@ class Pdf extends Fpdf
 {
     public $widths;
     public $aligns;
-    
+
     public function SetWidths($w)
     {
         //Set the array of column widths
@@ -27,11 +27,11 @@ class Pdf extends Fpdf
     {
         //Calculate the height of the row
         $nb=0; $nbMax=0; $noComment = false; $teacherCol = 9; $teacherInitialOffset = 62; $passmark = 50;
-        
+
         for($i=0;$i<count($data);$i++)
             if($i != $teacherCol) $nbMax=max($nbMax,$this->NbLines($this->widths[$i],$data[$i]));
-        $h=6*$nbMax;
-        
+        $h=4*$nbMax;
+
         //Issue a page break first if needed
         $this->CheckPageBreak($h);
         //Draw the cells of the row
@@ -48,23 +48,23 @@ class Pdf extends Fpdf
             // if($i == 1 && is_numeric($data[$i]) && $data[$i] < $passmark) $this->SetTextColor(255, 0, 0);
             // if($i == 2 && is_numeric($data[$i]) && $data[$i] < $passmark) $this->SetTextColor(255, 0, 0);
             //Print the text
-            if($i == $teacherCol ){                
+            if($i == $teacherCol ){
                 $this->SetFont('Times','BI','10');
                 if($data[$teacherCol-1] == "\n\t")
                     $this->Text($this->GetX() - $teacherInitialOffset, $this->GetY() + (bcdiv($h,$nb) + 1),$data[$i]);
                 else $this->Text($this->GetX() - $teacherInitialOffset, $this->GetY() + (bcdiv($h,$nb) * $nbMax) - 2," ".$data[$i]);
                 $this->SetFont('Times','','10');
-            }else{                
+            }else{
                 if($i==count($data)-1){
-                    $this->SetFont('Times','I','10'); 
+                    $this->SetFont('Times','I','10');
                 }
-                if($i==5)  $this->MultiCell($w,bcdiv($h,$nb,1),$data[$i],$border,$a,$fill);                         
-                else $this->MultiCell($w,bcdiv($h,$nb,1),$data[$i],$border,$a,$fill); 
-                $this->SetFont('Times','','10');           
-            }  
-            
-            $this->SetTextColor(0, 0, 0);           
-            
+                if($i==5)  $this->MultiCell($w,bcdiv($h,$nb,1),$data[$i],$border,$a,$fill);
+                else $this->MultiCell($w,bcdiv($h,$nb,1),$data[$i],$border,$a,$fill);
+                $this->SetFont('Times','','10');
+            }
+
+            $this->SetTextColor(0, 0, 0);
+
             //Put the position to the right of the cell
             $this->SetXY($x+$w,$y);
         }
@@ -75,18 +75,29 @@ class Pdf extends Fpdf
     public function ReportCardRow($data, $fill=false, $border=1)
     {
         //Calculate the height of the row
-        $nb=0; $nbMax=0; $noComment = false; $teacherCol = 9; $teacherInitialOffset = 62; $passmark = 50;
-        
-        for($i=0;$i<count($data);$i++)
-            if($i != $teacherCol) $nbMax=max($nbMax,$this->NbLines($this->widths[$i],$data[$i]));
+        $nb=0;
+        $nbMax=0;
+        $noComment = false;
+        $teacherCol = 9;
+        $teacherInitialOffset = 62;
+        $passmark = 50;
+        // Teacher comment line max chars
+        $maxChars = 40;
+
+        for($i=0;$i<count($data);$i++){
+            if($i != $teacherCol) {
+                $nbMax=max($nbMax,$this->NbLines($this->widths[$i],$data[$i]));
+            }
+        }
         $h=4*$nbMax;
-        
+
         //Issue a page break first if needed
         $this->CheckPageBreakReportCard($h);
         //Draw the cells of the row
         for($i=0;$i<count($data);$i++)
         {
             if($i != $teacherCol) $nb=$this->NbLines($this->widths[$i],$data[$i]);
+            //if($i == $teacherCol-1) $nb = ceil(bcdiv(strlen($data[$i]), $maxChars,1));
             if($nb == 0) $nb = 1;
             if($i != $teacherCol) $w=$this->widths[$i];
             if($i != $teacherCol)$a=isset($this->aligns[$i]) ? $this->aligns[$i] : 'L';
@@ -97,23 +108,25 @@ class Pdf extends Fpdf
             // if($i == 1 && is_numeric($data[$i]) && $data[$i] < $passmark) $this->SetTextColor(255, 0, 0);
             // if($i == 2 && is_numeric($data[$i]) && $data[$i] < $passmark) $this->SetTextColor(255, 0, 0);
             //Print the text
-            if($i == $teacherCol ){                
-                $this->SetFont('Times','BI','9');
+            if($i == $teacherCol ){
+                $this->SetFont('Times','BI','10');
                 if($data[$teacherCol-1] == "\n\t")
                     $this->Text($this->GetX() - $teacherInitialOffset, $this->GetY() + (bcdiv($h,$nb) + 1),$data[$i]);
                 else $this->Text($this->GetX() - $teacherInitialOffset, $this->GetY() + (bcdiv($h,$nb) * $nbMax) - 1," ".$data[$i]);
                 $this->SetFont('Times','','10');
-            }else{                
-                if($i==count($data)-1){
-                    $this->SetFont('Times','I','9'); 
+            }else{
+                if($i==count($data)-2){
+                    //set teacher comments to italics
+                    //$this->SetFont('Times','I','9');
                 }
-                if($i==5)  $this->MultiCell($w,bcdiv($h,$nb,1),$data[$i],$border,$a,$fill);                         
-                else $this->MultiCell($w,bcdiv($h,$nb,1),$data[$i],$border,$a,$fill); 
-                $this->SetFont('Times','','10');           
-            }  
-            
-            $this->SetTextColor(0, 0, 0);           
-            
+                // if($i==5)  $this->MultiCell($w,bcdiv($h,$nb,1),$data[$i],$border,$a,$fill);
+                $this->MultiCell($w,bcdiv($h,$nb,1),$data[$i],$border,$a,$fill);
+                //$this->MultiCell($w,bcdiv($h,$nb,1),"lines: ".$nb." str len:".strlen($data[$i])." nbmax: ".$nbMax,$border,$a,$fill);
+                $this->SetFont('Times','','10');
+            }
+
+            $this->SetTextColor(0, 0, 0);
+
             //Put the position to the right of the cell
             $this->SetXY($x+$w,$y);
         }
@@ -222,7 +235,7 @@ class Pdf extends Fpdf
 
         $x = $this->GetX();
 
-        $y = $this->GetY();       
+        $y = $this->GetY();
 
         $this->Rotate($angle, $x, $y);
 

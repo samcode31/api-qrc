@@ -430,7 +430,7 @@ class ReportCardController extends Controller
                         
                 $subject = $record->title;
                 $subject_id = $record->subject_id;
-
+                $this->pdf->SetFont('Times', '', 10);
                 $this->pdf->ReportCardRow(array(
                     $subject, 
                     $course_mark, 
@@ -440,7 +440,7 @@ class ReportCardController extends Controller
                     $absent,
                     $app,
                     $con,
-                    $comment."\n\t",
+                    rtrim($comment)."\n\t",
                     $teacher
                 ));                           
                 
@@ -449,6 +449,7 @@ class ReportCardController extends Controller
             $this->pdf->SetWidths(array(40, 45, 12, 12, 12, 12, 62.9));
             $this->pdf->SetAligns(array('L', 'C', 'C', 'C', 'C', 'C', 'L'));
 
+            
             $this->pdf->ReportCardRow(array(
                 'Music', 
                 "Grade \t\t".$mGrade,
@@ -477,22 +478,22 @@ class ReportCardController extends Controller
                 $coCurricular
             )); 
             
-            $this->pdf->ReportCardRow(array(
+            $this->pdf->Row(array(
                 "Form Teacher's Remarks:",
-                $formTeacherComments
-            ), false, "LTR");
+                rtrim($formTeacherComments)
+            ), false, 'LR');
             
             
-            $this->pdf->Cell(40, 6, "", "LBR", 0, 'L');
+            $this->pdf->Cell(40, 6, "", 'LBR', 0, 'L');
             $this->pdf->SetFont('Times', 'B', 10);
-            $this->pdf->Cell(0, 6, implode(" & ", $formTeachers), "LBR", 0, 'L');
+            $this->pdf->Cell(0, 6, implode(" & ", $formTeachers), 'LBR', 0, 'L');
             $this->pdf->SetFont('Times', '', 10);
             $this->pdf->Ln();
             
-            $this->pdf->ReportCardRow(array(
+            $this->pdf->Row(array(
                 "Form Dean's Remarks:",
                 $formDeanComments
-            ), false, "LTR");  
+            ), false, "LR");  
           
             $this->pdf->Cell(40, 6, "", "LBR", 0, 'L');
             $this->pdf->SetFont('Times', 'B', 10);
