@@ -518,12 +518,20 @@ class ReportCardController extends Controller
     
             $this->pdf->SetFont('Times', '', 11);
             
-            $this->pdf->SetY(-30);
+            $this->pdf->SetY(-40);
             $this->pdf->SetDrawColor(78,78,78);
-            $this->pdf->Cell(0,5,'A: 75-100, B: 65-74.9, C: 55-64.9, D:50-54.9, E: 0-49.9', 'LTR', 0, 'C');
+            $this->pdf->Cell(0,6,"A: 75-100, \t B: 65-74.9, \tC: 55-64.9, \tD:50-54.9, \tE: 0-49.9", 'LTR', 0, 'C');
             $this->pdf->Ln();
-            $this->pdf->MultiCell(0,5,'This report is not valid unless it bears the School\'s stamp and Principal\'s signature','LR','C');
-            $this->pdf->Cell(0,5,'','LBR');            
+
+            $this->pdf->Cell(0,6,"LATE: Late \t\t\tABS - Absent \t\t\tAPP - Application \t\t\tCON - Conduct ", 'LR', 0, 'C');
+            $this->pdf->Ln();
+
+            $this->pdf->Cell(0, 6, "Rating Scale: \t\tA - Excellent \t\tB - Good \t\tC - Satisfactory \t\tD - Needs Improvement \t\tE- Urgent Intervention Needed", 'LR', 0, 'C');
+            $this->pdf->Ln();
+
+            $this->pdf->SetFont('Times', 'I', 11);
+            $this->pdf->MultiCell(0,6,'This report is not valid unless it bears the School\'s stamp and Principal\'s signature','LR','C');
+            $this->pdf->Cell(0,2,'','LBR');            
         
             
            $this->waterMark();
