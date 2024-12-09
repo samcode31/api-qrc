@@ -16,7 +16,8 @@ use App\Models\FormDean;
 
 class ReportCardController extends Controller
 {
-    private $pdf;    
+    private $pdf;   
+    private $pageBreakHeight = 310; 
 
     public function __construct(\App\Models\Pdf $pdf)
     {
@@ -464,20 +465,20 @@ class ReportCardController extends Controller
                 ));   
             }
             
-            $this->pdf->Ln(3);
+            $this->pdf->Ln(2);
             $y=$this->pdf->GetY();
             //$this->pdf->Cell(0, 6, $this->pdf->CustomPageBreakTrigger()."  y".$y, 1, 0, 'C');
 
             $border=1;
-            $this->pdf->Cell(65.3, 5, "Attitude to Authority : ".$auth, $border, 0, 'L');
-            $this->pdf->Cell(65.3, 5, "Responsibility : ".$resp, $border, 0, 'L');
-            $this->pdf->Cell(65.3, 5, "Co-operation : ".$coop, $border, 0, 'L');
+            $this->pdf->Cell(65.3, 6, "Attitude to Authority : ".$auth, $border, 0, 'L');
+            $this->pdf->Cell(65.3, 6, "Responsibility : ".$resp, $border, 0, 'L');
+            $this->pdf->Cell(65.3, 6, "Co-operation : ".$coop, $border, 0, 'L');
             $this->pdf->Ln(8);
 
             $this->pdf->SetWidths(array(40, 155.9));
             $this->pdf->SetAligns(array('L', 'L'));
 
-            $this->pdf->ReportCardRow(array(
+            $this->pdf->Row(array(
                 'Co-Curricular Activities: ',
                 $coCurricular
             )); 
@@ -517,6 +518,13 @@ class ReportCardController extends Controller
             $this->pdf->Ln(8);
     
             $this->pdf->SetFont('Times', '', 11);
+
+            $y=$this->pdf->GetY();
+            if($y > $this->pageBreakHeight)
+            {
+                $this->waterMark();
+                $this->pdf->AddPage('P', 'Legal');
+            }
             
             $this->pdf->SetY(-40);
             $this->pdf->SetDrawColor(78,78,78);
@@ -526,12 +534,11 @@ class ReportCardController extends Controller
             $this->pdf->Cell(0,6,"LATE: Late \t\t\tABS - Absent \t\t\tAPP - Application \t\t\tCON - Conduct ", 'LR', 0, 'C');
             $this->pdf->Ln();
 
-            $this->pdf->Cell(0, 6, "Rating Scale: \t\tA - Excellent \t\tB - Good \t\tC - Satisfactory \t\tD - Needs Improvement \t\tE- Urgent Intervention Needed", 'LR', 0, 'C');
-            $this->pdf->Ln();
+            $this->pdf->Cell(0, 6, "Rating Scale: \t\tA - Excellent \t\tB - Good \t\tC - Satisfactory \t\tD - Needs Improvement \t\tE- Urgent Intervention Needed", 'LBR', 0, 'C');
+            $this->pdf->Ln(10);
 
             $this->pdf->SetFont('Times', 'I', 11);
-            $this->pdf->MultiCell(0,6,'This report is not valid unless it bears the School\'s stamp and Principal\'s signature','LR','C');
-            $this->pdf->Cell(0,2,'','LBR');            
+            $this->pdf->MultiCell(0,6,'This report is not valid unless it bears the School\'s stamp and Principal\'s signature',0,'C');
         
             
            $this->waterMark();
