@@ -124,8 +124,9 @@ class StudentController extends Controller
         return $students;
     }
 
-    public function data($form = null)
+    public function data(Request $request)
     {
+        $form = $request->input('form');
         $data = [];
         $students = Student::whereBetween('class_id',['0%','7%'])
         ->orderBy('id')

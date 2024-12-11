@@ -315,6 +315,8 @@ Route::get('/registration-form', [RegistrationFormController::class, 'createPDF'
 
 Route::delete('/file', [FileUploadController::class, 'delete']);
 
+Route::get('/registration-data', [StudentController::class, 'data']);
+
 /*
 |--------------------------------------------------------------------------
 | Upload Routes
