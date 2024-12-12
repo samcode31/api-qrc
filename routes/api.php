@@ -213,6 +213,14 @@ Route::delete('/weekly-test-subject', [StudentWeeklyTestController::class, 'dele
 
 Route::get('/teacher-subjects', [TeacherSubjectController::class, 'show']);
 
+Route::get('/class-assignments', [StudentController::class, 'getClassAssignments']);
+
+Route::get('/subjects-offered', [StudentSubjectController::class, 'showAll']);
+
+Route::get('/table1', [Table1Controller::class, 'termRecords']);
+
+Route::get('/table2', [Table2Controller::class, 'termRecords']);
+
 /*
 |--------------------------------------------------------------------------
 | Term Test Reports

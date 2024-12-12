@@ -377,8 +377,10 @@ class Table2Controller extends Controller
         return $data;
     }
 
-    public function termRecords($year, $term)
+    public function termRecords(Request $request)
     {
+        $year = $request->year;
+        $term = $request->term;
         $records = Table2::where([
             'year' => $year,
             'term' => $term

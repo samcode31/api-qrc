@@ -288,8 +288,10 @@ class Table1Controller extends Controller
         return $records;
     }
 
-    public function termRecords($year, $term)
+    public function termRecords(Request $request)
     {
+        $year = $request->year;
+        $term = $request->term;
         $records = Table1::where([
             'year' => $year,
             'term' => $term

@@ -34,6 +34,12 @@ class StudentSubjectController extends Controller
 
     }
 
+    public function showAll () 
+    {
+        return StudentSubject::select('student_id', 'subject_id')
+        ->get();
+    }
+
     public function store (Request $request)
     {
         return StudentSubject::updateOrCreate(
