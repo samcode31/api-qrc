@@ -136,7 +136,7 @@ class StudentController extends Controller
             $students = Student::where('class_id','like', $form.'%')->get();            
         }
         foreach($students as $student){
-            $student->sex = $student->sex[0];
+            // $student->sex = $student->sex[0];
             array_push($data, $student);
         }
         return $data;
