@@ -54,6 +54,8 @@ class ReportCardController extends Controller
         $year = $request->input('year');
         $term = $request->input('term');
         $classId = $request->input('classId');
+        $studentAccess = $request->input('studentAccess');
+
         $academicYearId = $year.($year + 1);
 
         $academicTermRecord = AcademicTerm::where([
@@ -201,7 +203,7 @@ class ReportCardController extends Controller
             $this->pdf->SetFont('Times', 'I', 10);
             $this->pdf->MultiCell(0, 5, $address, 0, 'C' );
             $this->pdf->MultiCell(0, 5, $contact, 0, 'C' );
-            // $this->pdf->Ln(2);
+            $this->pdf->Ln(2);
             
             $this->pdf->SetFont('Times', 'UB', 12);
             $this->pdf->MultiCell(0, 6, 'END OF TERM REPORT - '.$reportAcademicYear, 0, 'C' );
@@ -548,14 +550,17 @@ class ReportCardController extends Controller
             //$this->pdf->Rect(0,269.4, 215.9, 10, 'F');            
            
             
-            ReportCardLog::updateOrCreate(
-                [
-                    'student_id' => $studentId,
-                    'year' => $year,
-                    'term' => $term
-                ],
-                ['date_accessed' => date("Y-m-d h:i:s")]
-            );
+            if($studentAccess)
+            {
+                ReportCardLog::updateOrCreate(
+                    [
+                        'student_id' => $studentId,
+                        'year' => $year,
+                        'term' => $term
+                    ],
+                    ['date_accessed' => date("Y-m-d h:i:s")]
+                );
+            }
         }
 
         

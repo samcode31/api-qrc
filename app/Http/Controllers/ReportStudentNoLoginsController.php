@@ -40,10 +40,13 @@ class ReportStudentNoLoginsController extends Controller
         $recordCount = 0;
         $y = 0;
 
+        // return $this->data('3L');
+
         foreach($formClasses as $formClass)
         {
             $border=0;
-            $data = $this->data($formClass->id);            
+            $data = $this->data($formClass->id);
+            //if($formClass->id = '3L') return $data;            
 
             foreach($data as $index => $record){
                 $recordCount++;
@@ -145,22 +148,23 @@ class ReportStudentNoLoginsController extends Controller
 
     public function data ($classId) 
     {
-        return UserStudent::join('students', 'students.id', 'user_students.student_id')
+        return UserStudent::join(
+            'students', 
+            'students.id', 
+            'user_students.student_id'
+        )
         ->select(
             'user_students.student_id',
             'students.first_name',
             'students.last_name',
-            'students.class_id'
+            'students.class_id',
+            'user_students.created_at',
+            'user_students.updated_at'
         )
-        ->where([
-            [
-                DB::raw('date(user_students.created_at)'),
-                DB::raw('date(user_students.updated_at)')
-            ],
-            ['class_id', $classId]
-        ])
-        ->whereBetween('class_id', ['1%', '7%'])
-        ->orderBy('students.class_id')
+        ->whereRaw('user_students.created_at = user_students.updated_at')
+        ->where('students.class_id', $classId)
+        ->orderBy('students.last_name')
+        ->orderBy('students.first_name')
         ->get();
     }
 }

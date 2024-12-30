@@ -52,18 +52,21 @@ class ReportCardAccessLogController extends Controller
             
             $this->pdf->SetFont('Times', '', 11);
 
+            $timestamp = strtotime($record->date_accessed);
+            $formattedDate = date('Y-m-d h:i:s A', $timestamp);
+
             if($year & $term){
                 $this->pdf->Cell($this->col1, 6, $record->student_id, $border, 0, 'L');
                 $this->pdf->Cell($this->col2+20, 6, $record->last_name.', '.$record->first_name, $border, 0, 'L');
                 $this->pdf->Cell($this->col3+10, 6, $record->class_id, $border, 0, '');                
-                $this->pdf->Cell($this->col5, 6, $record->date_accessed, $border, 0, 'L');
+                $this->pdf->Cell($this->col5, 6, $formattedDate, $border, 0, 'L');
             }
             else{
                 $this->pdf->Cell($this->col1, 6, $record->student_id, $border, 0, 'L');
                 $this->pdf->Cell($this->col2, 6, $record->last_name.', '.$record->first_name, $border, 0, 'L');
                 $this->pdf->Cell($this->col3, 6, $record->class_id, $border, 0, '');
                 $this->pdf->Cell($this->col4, 6, 'Term '.$record->term.', '.$record->year, $border, 0, '');
-                $this->pdf->Cell($this->col5, 6, $record->date_accessed, $border, 0, 'L');
+                $this->pdf->Cell($this->col5, 6, $formattedDate, $border, 0, 'L');
             }
             
             $this->pdf->Ln();            
