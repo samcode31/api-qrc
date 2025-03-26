@@ -651,8 +651,8 @@ class MarkSheetController extends Controller
                         $form_level == 3 ||
                         $form_level == 4
                     )){
-                        $total_marks += is_numeric($course_mark) ? $course_mark : 0;
-                        $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' :$course_mark;
+                        $total_marks += is_numeric($course_mark) ? number_format($course_mark,1) : 0;
+                        $mark_record['exam_mark'] = is_null($course_mark) ? 'Abs' : number_format($course_mark,1);
                     }
     
                     elseif($term == 2 && (
