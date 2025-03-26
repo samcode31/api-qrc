@@ -195,7 +195,7 @@ class MarkSheetController extends Controller
                     $this->pdf->Cell(10,7,'',1,0,'C',true);
                 }
             }
-            $this->pdf->Cell(10,7,$record['total_marks'],1,0,'C',true);
+            $this->pdf->Cell(10,7,number_format($record['total_marks'],1),1,0,'C',true);
 
             if($record['average'] < $passMark) $this->pdf->SetTextColor(255,0,0);
             $this->pdf->Cell(10,7,$record['average'],1,0,'R',true);
