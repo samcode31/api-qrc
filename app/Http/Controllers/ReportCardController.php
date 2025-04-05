@@ -695,8 +695,7 @@ class ReportCardController extends Controller
             }
         }
 
-        // $average = $subjects != 0 ? number_format($totalMarks/$subjects, 1) : null;
-        $average = $subjects != 0 ? $totalMarks : null;
+        $average = $subjects != 0 ? number_format($totalMarks/$subjects, 1) : null;
 
         return $average;
         // return $subjects;
