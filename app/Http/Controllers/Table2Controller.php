@@ -15,6 +15,7 @@ use App\Models\TeacherLesson;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 use App\Models\AssesmentCourse;
 use App\Models\AssesmentEmployeeAssignment;
+use Illuminate\Support\Facades\DB;
 
 class Table2Controller extends Controller
 {
@@ -351,8 +352,27 @@ class Table2Controller extends Controller
         $classId = $request->class_id;
 
         $data = [];
-        $data['table2_records'] = Table2::join('subjects', 'subjects.id', 'table2.subject_id')
-        ->select('table2.*','subjects.abbr', 'subjects.title')
+        $data['table2_records'] = Table2::join(
+            'subjects', 
+            'subjects.id', 
+            'table2.subject_id'
+        )
+        ->select(
+            'table2.student_id',
+            'table2.year',
+            'table2.term',
+            'table2.subject_id',
+            'table2.exam_mark',
+            DB::raw('ROUND(table2.course_mark,1) as course_mark'),
+            'table2.late',
+            'table2.absent',
+            'table2.app',
+            'table2.con',
+            'table2.comment',
+            'table2.employee_id',
+            'subjects.abbr', 
+            'subjects.title'
+        )
         ->where([
             ['student_id', $studentId],  
             ['year', $year],
