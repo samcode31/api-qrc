@@ -162,7 +162,6 @@ class MarkBookSpreadsheetController extends Controller
         $currentTerm = $academicTermRecord ? $academicTermRecord->term : null;
         $currentYear = $academicTermRecord ? $academicTermRecord->academic_year_id : null;
 
-        
 
         if($formClass && !$subjectId)
         {
@@ -279,7 +278,8 @@ class MarkBookSpreadsheetController extends Controller
                 sizeof($students) == 0 && 
                 $term == $currentTerm &&
                 $year == $currentYear
-            ){
+            )
+            {
                 $students = Student::join(
                     'student_subjects',
                     'student_subjects.student_id',
@@ -299,7 +299,8 @@ class MarkBookSpreadsheetController extends Controller
                 ->get();
             }
         }
-        elseif($formClass && $subjectId && $formLevel > 3){
+        elseif($formClass && $subjectId && $formLevel > 3)
+        {
             $students = AssesmentCourse::join(
                 'assesment_employee_assignments',
                 'assesment_employee_assignments.id',
@@ -381,7 +382,8 @@ class MarkBookSpreadsheetController extends Controller
         // ->orderBy('title')
         // ->get();
 
-        if($subjectId){
+        if($subjectId)
+        {
             $subjects = TeacherLesson::where([
                 ['academic_year_id', $year],
                 ['form_class_id', $formClass],
@@ -607,7 +609,11 @@ class MarkBookSpreadsheetController extends Controller
 
     private function spreadsheetHeaders ($year, $term, $formLevel, $formClass, $subjectId) 
     {
-        $data = []; $row1 = []; $row2 = []; $row3 = []; $row4 = [];
+        $data = []; 
+        $row1 = []; 
+        $row2 = []; 
+        $row3 = []; 
+        $row4 = [];
         $defaultAssesments = 5;
         
         $subjects = TeacherLesson::where([
@@ -635,7 +641,8 @@ class MarkBookSpreadsheetController extends Controller
         ->orderBy('title')
         ->get();
 
-        if($subjectId){
+        if($subjectId)
+        {
             $subjects = TeacherLesson::where([
                 ['academic_year_id', $year],
                 ['form_class_id', $formClass],
@@ -670,11 +677,13 @@ class MarkBookSpreadsheetController extends Controller
 
         foreach($subjects as $subject){
             $assesmentMaxTotal = 0; 
+            $defaultAssesments = 5;
             $courseAssesmentRecords = AssesmentEmployeeAssignment::where([
                 ['academic_year_id', $year],
                 ['term', $term],
                 ['subject_id', $subject->subject_id],
-                ['form_class_id', $formClass]
+                ['form_class_id', $formClass],
+                ['employee_id', $subject->employee_id]
             ])
             ->get();
 
@@ -702,7 +711,8 @@ class MarkBookSpreadsheetController extends Controller
                     ['term', $term],
                     ['subject_id', $subject->subject_id],
                     ['form_class_id', $formClass],
-                    ['assesment_number', $i]
+                    ['assesment_number', $i],
+                    ['employee_id', $subject->employee_id]
                 ])->first();
 
                 $assesmentTopic = 'CW #'.$i;
