@@ -17,7 +17,9 @@ use App\Models\FormDean;
 class ReportCardController extends Controller
 {
     private $pdf;   
-    private $pageBreakHeight = 310; 
+    private $pageBreakHeight = 310;
+    CONST EXAM_WEIGHTING = 1;
+    CONST COURSE_WEIGHTING = 0.3;
 
     public function __construct(\App\Models\Pdf $pdf)
     {
@@ -384,8 +386,8 @@ class ReportCardController extends Controller
             foreach($table2Records as $record)
             {
                 $average_mark = 0;  
-                $exam_mark = is_null($record->exam_mark) ?  'Abs' : number_format($record->exam_mark*0.75,1);
-                $course_mark = is_null($record->course_mark) ?  'Abs' : number_format($record->course_mark*0.25,1);
+                $exam_mark = 0;
+                $course_mark = 0;
                 $comment = $record->comment;
                 $app = $record->app;
                 $con = $record->con;
@@ -426,8 +428,8 @@ class ReportCardController extends Controller
     
                 else
                 {
-                    $exam_mark = is_null($record->exam_mark) ? 'Abs' : number_format($record->exam_mark*0.7,1);
-                    $course_mark = is_null($record->course_mark) ? 'Abs' : number_format($record->course_mark*0.3,1);
+                    $exam_mark = is_null($record->exam_mark) ? 'Abs' : number_format($record->exam_mark*self::EXAM_WEIGHTING,1);
+                    $course_mark = is_null($record->course_mark) ? 'Abs' : number_format($record->course_mark*self::COURSE_WEIGHTING,1);
 
                     $average_mark += is_numeric($course_mark) ? $course_mark : 0;
                     $average_mark += is_numeric($exam_mark) ? $exam_mark : 0;
@@ -691,7 +693,7 @@ class ReportCardController extends Controller
         else{
             foreach($table2Records as $record){
                 $subjects++;
-                $totalMarks += $record->course_mark*0.3 + $record->exam_mark*0.7;
+                $totalMarks += $record->course_mark*self::COURSE_WEIGHTING + $record->exam_mark*self::EXAM_WEIGHTING;
             }
         }
 
