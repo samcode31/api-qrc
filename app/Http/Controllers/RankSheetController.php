@@ -220,7 +220,7 @@ class RankSheetController extends Controller
             }
             else {
                 $totalMarks += is_numeric($courseMark) ? number_format($courseMark*0.3,1) : 0; 
-                $totalMarks += is_numeric($examMark) ? number_format($examMark*0.7,1) : 0;
+                $totalMarks += is_numeric($examMark) ? number_format($examMark,1) : 0;
             }
             
         }

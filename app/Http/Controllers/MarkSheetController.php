@@ -332,8 +332,8 @@ class MarkSheetController extends Controller
                     }
                     else {
                         $total_marks += is_numeric($course_mark) ? number_format($course_mark*0.3,1) : 0;
-                        $total_marks += is_numeric($exam_mark) ? number_format($exam_mark*0.7,1) : 0;
-                        $mark_record['exam_mark'] = is_null($course_mark) && is_null($exam_mark) ? 'Abs' : $course_mark*0.3 + $exam_mark*0.7;
+                        $total_marks += is_numeric($exam_mark) ? number_format($exam_mark,1) : 0;
+                        $mark_record['exam_mark'] = is_null($course_mark) && is_null($exam_mark) ? 'Abs' : $course_mark*0.3 + $exam_mark;
                     }
     
                     $total_subjects++;
@@ -667,8 +667,8 @@ class MarkSheetController extends Controller
                     }
                     else {
                         $total_marks += is_numeric($course_mark) ? number_format($course_mark*0.3,1) : 0;
-                        $total_marks += is_numeric($exam_mark) ? number_format($exam_mark*0.7,1) : 0;
-                        $mark_record['exam_mark'] = is_null($course_mark) && is_null($exam_mark) ? 'Abs' : number_format($course_mark*0.3 + $exam_mark*0.7,1);
+                        $total_marks += is_numeric($exam_mark) ? number_format($exam_mark,1) : 0;
+                        $mark_record['exam_mark'] = is_null($course_mark) && is_null($exam_mark) ? 'Abs' : number_format($course_mark*0.3 + $exam_mark,1);
                     }
     
                     $total_subjects++;
