@@ -426,15 +426,38 @@ class ReportCardController extends Controller
                     $average_mark = is_numeric($exam_mark) ? $exam_mark : '----';
                 }
     
+                elseif($term == 3)
+                {
+                    $table2Term1Record = Table2::where([
+                        ['student_id', $studentId],
+                        ['year', $year],
+                        ['term', 1],
+                        ['subject_id', $record->subject_id]
+                    ])
+                    ->first();
+
+                    $table2Term2Record = Table2::where([
+                        ['student_id', $studentId],
+                        ['year', $year],
+                        ['term', 2],
+                        ['subject_id', $record->subject_id]
+                    ])
+                    ->first();
+
+                    $term1CourseMarkWeighted = $table2Term1Record ? $table2Term1Record->course_mark*self::COURSE_WEIGHTING/3 : 0;
+                    $term2CourseMarkWeighted = $table2Term2Record ? $table2Term2Record->course_mark/10 : 0;
+                    $term3CourseMarkWeighted = $record->course_mark*self::COURSE_WEIGHTING/3;
+                    $course_mark = number_format($term1CourseMarkWeighted + $term2CourseMarkWeighted + $term3CourseMarkWeighted,1);
+                }
+                        
                 else
                 {
                     $exam_mark = is_null($record->exam_mark) ? 'Abs' : number_format($record->exam_mark*self::EXAM_WEIGHTING,1);
                     $course_mark = is_null($record->course_mark) ? 'Abs' : number_format($record->course_mark*self::COURSE_WEIGHTING,1);
 
                     $average_mark += is_numeric($course_mark) ? $course_mark : 0;
-                    $average_mark += is_numeric($exam_mark) ? $exam_mark : 0;
+                    $average_mark += is_numeric($exam_mark) ? $exam_mark : 0 ;
                 }
-                        
                 $subject = $record->title;
                 $subject_id = $record->subject_id;
                 $this->pdf->SetFont('Times', '', 10);
