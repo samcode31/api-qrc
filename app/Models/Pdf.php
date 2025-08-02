@@ -142,6 +142,68 @@ class Pdf extends Fpdf
         $this->Ln($h);
     }
 
+    public function MusicRow($data, $fill=false, $border=1)
+    {
+        //Calculate the height of the row
+        $nb=0;
+        $nbMax=0;
+        $noComment = false;
+        $teacherCol = 7;
+        $teacherInitialOffset = 62;
+        $passmark = 50;
+        // Teacher comment line max chars
+        $maxChars = 40;
+
+        for($i=0;$i<count($data);$i++){
+            if($i != $teacherCol) {
+                $nbMax=max($nbMax,$this->NbLines($this->widths[$i],$data[$i]));
+            }
+        }
+        $h=4*$nbMax;
+
+        //Issue a page break first if needed
+        $this->CheckPageBreakReportCard($h);
+        //Draw the cells of the row
+        for($i=0;$i<count($data);$i++)
+        {
+            if($i != $teacherCol) $nb=$this->NbLines($this->widths[$i],$data[$i]);
+            //if($i == $teacherCol-1) $nb = ceil(bcdiv(strlen($data[$i]), $maxChars,1));
+            if($nb == 0) $nb = 1;
+            if($i != $teacherCol) $w=$this->widths[$i];
+            if($i != $teacherCol)$a=isset($this->aligns[$i]) ? $this->aligns[$i] : 'L';
+            //Save the current position
+            $x=$this->GetX();
+            $y=$this->GetY();
+            //set mark to red
+            // if($i == 1 && is_numeric($data[$i]) && $data[$i] < $passmark) $this->SetTextColor(255, 0, 0);
+            // if($i == 2 && is_numeric($data[$i]) && $data[$i] < $passmark) $this->SetTextColor(255, 0, 0);
+            //Print the text
+            if($i == $teacherCol ){
+                $this->SetFont('Times','BI','10');
+                if($data[$teacherCol-1] == "\n\t")
+                    $this->Text($this->GetX() - $teacherInitialOffset, $this->GetY() + (bcdiv($h,$nb) + 1),$data[$i]);
+                else $this->Text($this->GetX() - $teacherInitialOffset, $this->GetY() + (bcdiv($h,$nb) * $nbMax) - 1," ".$data[$i]);
+                $this->SetFont('Times','','10');
+            }else{
+                if($i==count($data)-2){
+                    //set teacher comments to italics
+                    //$this->SetFont('Times','I','9');
+                }
+                // if($i==5)  $this->MultiCell($w,bcdiv($h,$nb,1),$data[$i],$border,$a,$fill);
+                $this->MultiCell($w,bcdiv($h,$nb,1),$data[$i],$border,$a,$fill);
+                //$this->MultiCell($w,bcdiv($h,$nb,1),"lines: ".$nb." str len:".strlen($data[$i])." nbmax: ".$nbMax,$border,$a,$fill);
+                $this->SetFont('Times','','10');
+            }
+
+            $this->SetTextColor(0, 0, 0);
+
+            //Put the position to the right of the cell
+            $this->SetXY($x+$w,$y);
+        }
+        //Go to the next line
+        $this->Ln($h);
+    }
+
     public function CheckPageBreakReportCard($h)
     {
         //If the height h would cause an overflow, add a new page immediately

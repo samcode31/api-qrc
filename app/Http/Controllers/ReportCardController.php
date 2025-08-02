@@ -13,6 +13,7 @@ use App\Models\Weighting;
 use App\Models\Student;
 use App\Models\AcademicTerm;
 use App\Models\FormDean;
+use App\Models\TeacherLesson;
 
 class ReportCardController extends Controller
 {
@@ -150,6 +151,7 @@ class ReportCardController extends Controller
             $reportAcademicYear = $year.' / '.$yearEnd;
             $formTeachers = [];
             $formDeans = [];
+            $musicTeachers = [];
             
 
             $formTeacherRecords = FormTeacher::join('employees', 'employees.id', 'form_teachers.employee_id')
@@ -173,6 +175,23 @@ class ReportCardController extends Controller
 
             foreach($formDeanRecords as $formDean){
                 array_push($formDeans, $formDean->first_name[0].'. '.$formDean->last_name );
+            }
+
+            $musicTeacherRecords = TeacherLesson::join(
+                'employees', 
+                'employees.id', 
+                'teacher_lessons.employee_id'
+            )
+            ->where([
+                ['academic_year_id', $year.($year+1)],
+                ['form_class_id', $formClass],
+                ['subject_id', 29]
+            ])
+            ->select('employees.first_name', 'employees.last_name')
+            ->get();
+
+            foreach($musicTeacherRecords as $musicTeacher){
+                array_push($musicTeachers, $musicTeacher->first_name[0].'. '.$musicTeacher->last_name );
             }
 
             $average = $this->averageMark($year, $term, $studentId, $form_level);
@@ -485,20 +504,26 @@ class ReportCardController extends Controller
 
             
             if($form_level < 4){
-                $this->pdf->ReportCardRow(array(
+                $this->pdf->MusicRow(array(
                     'Music', 
                     "Grade \t\t".$mGrade,
                     $mLate, 
                     $mAbs, 
                     $mApp,
                     $mCon,
-                    $mComments,
+                    $mComments."\n\t",
+                    implode(" & ", $musicTeachers)
                 ));   
             }
             
             $this->pdf->Ln(2);
-            $y=$this->pdf->GetY();
             //$this->pdf->Cell(0, 6, $this->pdf->CustomPageBreakTrigger()."  y".$y, 1, 0, 'C');
+            $y=$this->pdf->GetY();
+            if($y > $this->pageBreakHeight)
+            {
+                $this->waterMark();
+                $this->pdf->AddPage('P', 'Legal');
+            }
 
             $border=1;
             $this->pdf->Cell(65.3, 6, "Attitude to Authority : ".$auth, $border, 0, 'L');
@@ -519,17 +544,23 @@ class ReportCardController extends Controller
                 rtrim($formTeacherComments)
             ), false, 'LR');
             
-            
             $this->pdf->Cell(40, 6, "", 'LBR', 0, 'L');
             $this->pdf->SetFont('Times', 'B', 10);
             $this->pdf->Cell(0, 6, implode(" & ", $formTeachers), 'LBR', 0, 'L');
             $this->pdf->SetFont('Times', '', 10);
             $this->pdf->Ln();
+
+            $y=$this->pdf->GetY();
+            if($y > $this->pageBreakHeight)
+            {
+                $this->waterMark();
+                $this->pdf->AddPage('P', 'Legal');
+            }
             
             $this->pdf->Row(array(
                 "Form Dean's Remarks:",
                 $formDeanComments
-            ), false, "LR");  
+            ), false, "LRT");  
           
             $this->pdf->Cell(40, 6, "", "LBR", 0, 'L');
             $this->pdf->SetFont('Times', 'B', 10);
