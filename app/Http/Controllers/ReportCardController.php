@@ -519,7 +519,7 @@ class ReportCardController extends Controller
             $this->pdf->Ln(2);
             //$this->pdf->Cell(0, 6, $this->pdf->CustomPageBreakTrigger()."  y".$y, 1, 0, 'C');
             $y=$this->pdf->GetY();
-            if($y > $this->pageBreakHeight)
+            if($y + 6 > $this->pageBreakHeight)
             {
                 $this->waterMark();
                 $this->pdf->AddPage('P', 'Legal');
@@ -559,7 +559,7 @@ class ReportCardController extends Controller
             
             $this->pdf->Row(array(
                 "Form Dean's Remarks:",
-                $formDeanComments
+                utf8_decode($this->normalize_quotes($formDeanComments))
             ), false, "LRT");  
           
             $this->pdf->Cell(40, 6, "", "LBR", 0, 'L');
@@ -1017,4 +1017,17 @@ class ReportCardController extends Controller
         //return $data;
         return $recordsReturn;
     }
+
+    private function normalize_quotes($text) {
+        $replacements = [
+            "’" => "'",
+            "‘" => "'",
+            "“" => '"',
+            "”" => '"',
+            "–" => '-', // en dash
+            "—" => '-', // em dash
+        ];
+        return strtr($text, $replacements);
+    }
+
 }
