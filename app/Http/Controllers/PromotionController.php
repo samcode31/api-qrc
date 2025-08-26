@@ -8,6 +8,7 @@ use App\Models\Student;
 use Illuminate\Support\Facades\DB;
 use DateTime;
 use App\Models\AcademicTerm;
+use Illuminate\Support\Facades\Storage;
 
 class PromotionController extends Controller
 {
@@ -23,32 +24,31 @@ class PromotionController extends Controller
 
         $distinctClassLevels = Student::join(
             'form_classes',
-            'students.form_class_id',
+            'students.class_id',
             'form_classes.id'
         )
         ->select(
-            'form_classes.class_level',
-            'form_classes.class_group'
+            'form_classes.form_level',
         )
-        ->whereNotNull('class_level')
+        ->whereNotNull('form_level')
         ->distinct()
-        ->orderBy('class_level', 'desc')
+        ->orderBy('form_level', 'desc')
         ->get();
 
 
+        $promotionClassId = null;
+
         foreach($distinctClassLevels as $record)
         {
-            $classLevel = $record->class_level;
-            switch ($classLevel) {
+            $formLevel = $record->form_level;
+            switch ($formLevel) {
                 case 7:
                     FormClass::firstOrcreate([
-                        'class_name' => "G-$year",
-                        'class_group' => $record->class_group
+                        'id' => "G-$year",
                     ]);
             
                     $graduateClass = FormClass::where([
-                        ['class_name', 'G-'.$year],
-                        ['class_group', $record->class_group]
+                        ['id', 'G-'.$year],
                     ])->first();
 
                     $promotionClassId = $graduateClass->id;
@@ -57,8 +57,7 @@ class PromotionController extends Controller
 
                 case 6:
                     $promotionClass = FormClass::where([
-                        ['class_level', 7],
-                        ['class_group', $record->class_group],
+                        ['form_level', 7],
                     ])->first();
                     
                     $promotionClassId = $promotionClass ? $promotionClass->id : null;
@@ -67,8 +66,7 @@ class PromotionController extends Controller
 
                 case 5:
                     $promotionClass = FormClass::where([
-                        ['class_level', 6],
-                        ['class_group', $record->class_group],
+                        ['form_level', 6],
                     ])->first();
                     
                     $promotionClassId = $promotionClass ? $promotionClass->id : null;
@@ -77,8 +75,7 @@ class PromotionController extends Controller
 
                 case 4:
                     $promotionClass = FormClass::where([
-                        ['class_level', 5],
-                        ['class_group', $record->class_group],
+                        ['form_level', 5],
                     ])->first();
                     
                     $promotionClassId = $promotionClass ? $promotionClass->id : null;
@@ -87,8 +84,7 @@ class PromotionController extends Controller
 
                 case 3:
                     $promotionClass = FormClass::where([
-                        ['class_level', 4],
-                        ['class_group', $record->class_group],
+                        ['form_level', 4],
                     ])->first();
                     
                     $promotionClassId = $promotionClass ? $promotionClass->id : null;
@@ -97,8 +93,7 @@ class PromotionController extends Controller
 
                 case 2:
                     $promotionClass = FormClass::where([
-                        ['class_level', 3],
-                        ['class_group', $record->class_group],
+                        ['form_level', 3],
                     ])->first();
                     
                     $promotionClassId = $promotionClass ? $promotionClass->id : null;
@@ -107,8 +102,7 @@ class PromotionController extends Controller
 
                 case 1:
                     $promotionClass = FormClass::where([
-                        ['class_level', 2],
-                        ['class_group', $record->class_group],
+                        ['form_level', 2],
                     ])->first();
                     
                     $promotionClassId = $promotionClass ? $promotionClass->id : null;
@@ -118,45 +112,105 @@ class PromotionController extends Controller
                 
             }
 
+            if(!isset($promotionClassId) || !$promotionClassId) continue;
+
             Student::join(
                 'form_classes',
-                'students.form_class_id',
+                'students.class_id',
                 'form_classes.id'
             )
             ->where([
-                ['class_level', $classLevel],
-                ['form_classes.class_group', $record->class_group],
+                ['form_level', $formLevel],
             ])
-            ->update(['form_class_id' => $promotionClassId]);
+            ->update(['class_id' => $promotionClassId]);
             
             
         }
 
-        return DB::table('students')
-        ->join('form_classes', 'students.form_class_id', 'form_classes.id')
-        ->leftJoin('form_teachers', function($join) use ($academicYearId){
-            $join->on('form_classes.id', '=', 'form_teachers.form_class_id')
-            ->where('form_teachers.academic_year_id', $academicYearId);
-        })
-        ->leftJoin('employees', 'form_teachers.employee_id', 'employees.id')
+         $students = Student::join(
+            'form_classes', 
+            'form_classes.id', 
+            'students.class_id')
         ->select(
-            'students.id',
-            'students.first_name',
-            'students.last_name',
-            DB::raw('
-                CASE
-                    WHEN employees.id IS NOT NULL THEN CONCAT(form_classes.class_name, " - ", employees.first_name, " ", employees.last_name) 
-                    ELSE CONCAT(form_classes.class_name, " - GP",form_classes.class_group)
-                END AS class_name    
-
-            ')
+            'students.id', 
+            'first_name', 
+            'last_name',
+            'form_level', 
+            'class_id', 
+            'birth_certificate_no', 
+            'date_of_birth',
+            'file_birth_certificate',
+            'file_sea_slip',
+            'file_immunization_card',
+            'picture', 
+            'students.updated_at',
+            'home_address',
+            'address_line_2',
+            'phone_home',
+            'phone_cell',
+            'email',
+            'father_name',
+            'father_home_address',
+            'father_phone_home',
+            'father_occupation',
+            'father_business_place',
+            'father_business_address',
+            'father_business_phone',
+            'email_father',
+            'mobile_father',
+            'mobile_phone_father',
+            'mother_name',
+            'mother_home_address',
+            'mother_phone_home',
+            'mother_occupation',
+            'mother_business_place',
+            'mother_business_address',
+            'mother_business_phone',
+            'mobile_phone_mother',
+            'email_mother',
+            'mobile_mother',
+            'guardian_name',
+            'guardian_business_place',
+            'guardian_business_address',
+            'business_phone_guardian',
+            'mobile_phone_guardian',
+            'email_guardian',
+            'mobile_guardian',
+            'guardian_occupation',
+            'guardian_phone',
         )
-        ->where('form_classes.class_name', 'G-'.$year)
-        ->orWhere(function($query) {
-            $query->whereNotNull('form_classes.class_level')
-            ->whereNotNull('form_classes.class_group');
+        ->where(function($query) {
+            $query->where('students.class_id', 'LIKE', '0%')
+                    ->orWhere('students.class_id', 'LIKE', '1%')
+                    ->orWhere('students.class_id', 'LIKE', '2%')
+                    ->orWhere('students.class_id', 'LIKE', '3%')
+                    ->orWhere('students.class_id', 'LIKE', '4%')
+                    ->orWhere('students.class_id', 'LIKE', '5%')
+                    ->orWhere('students.class_id', 'LIKE', '6%')
+                    ->orWhere('students.class_id', 'LIKE', '7%');
         })
+        ->orderBy('last_name')
+        ->orderBy('first_name')               
         ->get();
+
+        foreach($students as $student) { 
+            $student->first_name =  ucwords(strtolower($student->first_name));          
+            $student->last_name =  ucwords(strtolower($student->last_name));          
+            if($student->file_birth_certificate)
+            $student->file_birth_certificate = Storage::url($student->file_birth_certificate);
+            if($student->file_sea_slip)
+            $student->file_sea_slip = Storage::url($student->file_sea_slip);
+            if($student->file_immunization_card) 
+            $student->file_immunization_card = Storage::url($student->file_immunization_card);
+            if($student->picture)
+            $student->picture = Storage::url($student->picture);
+            if($student->file_passport)
+            $student->file_passport = Storage::url($student->file_passport);
+            if($student->file_student_permit)
+            $student->file_student_permit = Storage::url($student->file_student_permit);
+        }
+
+        return $students;
         
     }
 
@@ -166,7 +220,7 @@ class PromotionController extends Controller
         
         $distinctClassLevels = Student::join(
             'form_classes',
-            'students.form_class_id',
+            'students.class_id',
             'form_classes.id'
         )
         ->select(
@@ -243,21 +297,21 @@ class PromotionController extends Controller
 
             Student::join(
                 'form_classes',
-                'students.form_class_id',
+                'students.class_id',
                 'form_classes.id'
             )
             ->where([
                 ['class_level', $record->class_level],
                 ['form_classes.class_group', $record->class_group],
             ])
-            ->update(['form_class_id' => $previousClassId]);
+            ->update(['class_id' => $previousClassId]);
         }
 
         $date = new DateTime();
 
         $year = $date->format('y');
         
-        $graduateClasses = FormClass::where('class_name', 'G-'.$year)
+        $graduateClasses = FormClass::where('id', 'G-'.$year)
         ->get();
 
         foreach($graduateClasses as $graduateClass)
@@ -271,14 +325,14 @@ class PromotionController extends Controller
             
             Student::join(
                 'form_classes',
-                'students.form_class_id',
+                'students.class_id',
                 'form_classes.id'
             )
             ->where([
-                ['students.form_class_id', $graduateClass->id],
+                ['students.class_id', $graduateClass->id],
                 ['form_classes.class_group', $graduateClass->class_group],
             ])
-            ->update(['form_class_id' => $previousClassId]);
+            ->update(['class_id' => $previousClassId]);
         }
 
     }
