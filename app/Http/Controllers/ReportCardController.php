@@ -115,7 +115,8 @@ class ReportCardController extends Controller
 
         $median = $this->median($classAverages);
 
-        foreach($table1Records as $table1Record) {
+        foreach($table1Records as $table1Record) 
+        {
 
             $studentId = $table1Record->student_id;
             $year = $table1Record->year;
@@ -153,6 +154,29 @@ class ReportCardController extends Controller
             $formDeans = [];
             $musicTeachers = [];
             
+            if($term == 3)
+            {
+                $possibleAttendance = 0;
+                $timesAbsent = 0;
+                $timesLate = 0;
+
+                $table1Records = Table1::where([
+                    ['student_id', $studentId],
+                    ['year', $year],
+                ])
+                ->select(
+                    'possible_attendance',
+                    'times_absent',
+                    'times_late'
+                )
+                ->get();
+
+                foreach($table1Records as $record){
+                    $possibleAttendance += $record->possible_attendance;
+                    $timesAbsent += $record->times_absent;
+                    $timesLate += $record->times_late;
+                }
+            }
 
             $formTeacherRecords = FormTeacher::join('employees', 'employees.id', 'form_teachers.employee_id')
             ->select('employees.first_name', 'employees.last_name')
