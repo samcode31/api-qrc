@@ -192,7 +192,7 @@ Route::post('/subject-students-batch', [StudentSubjectController::class, 'storeB
 
 Route::delete('/subject-students', [StudentSubjectController::class, 'delete']);
 
-
+Route::post('/promote-students', [StudentController::class, 'promote']);
 
 /*
 |--------------------------------------------------------------------------
