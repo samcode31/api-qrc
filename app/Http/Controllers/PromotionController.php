@@ -41,10 +41,9 @@ class PromotionController extends Controller
         {
             $formClassId = $record->id;
             $formClassSuffix = substr($formClassId, -1);
-            $classRecord = [];
-            $classRecord['form_class_id'] = $formClassId;
 
-            switch ($record->form_level) {
+            switch ($record->form_level) 
+            {
                 case 7:
                     FormClass::firstOrcreate([
                         'id' => "G$year-$record->id",
@@ -126,17 +125,11 @@ class PromotionController extends Controller
 
             if(!isset($promotionClassId) || !$promotionClassId) continue;
 
-            Student::join(
-                'form_classes',
-                'students.class_id',
-                'form_classes.id'
-            )
-            ->where([
-                ['form_level', $record->form_level],
-            ])
+            Student::where('class_id', $formClassId)
             ->update(['class_id' => $promotionClassId]);
             
         }
+
 
         $students = Student::join(
             'form_classes', 
