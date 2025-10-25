@@ -337,6 +337,8 @@ Route::post('/upload-subjects', [SubjectController::class, 'upload']);
 
 Route::post('/upload-employees', [EmployeeController::class, 'upload']);
 
+Route::post('/upload-table1', [Table1Controller::class, 'upload']);
+
 /*
 |--------------------------------------------------------------------------
 | Mark Book Routes

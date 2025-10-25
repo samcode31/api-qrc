@@ -237,26 +237,31 @@ class Table1Controller extends Controller
         // return $rows;
         $records = 0;
         for($i = 2; $i <= $rows; $i++){
-            $id = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(1,$i)->getValue();
-            $year = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(2,$i)->getValue();
-            $term = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(3,$i)->getValue();
-            $test = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(4,$i)->getValue();
-            $class_id = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(5,$i)->getValue();
-            $new_term_beginning = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(6,$i)->getValue();
+            $id = $spreadsheet->getActiveSheet()->getCell([1,$i])->getValue();
+            $year = $spreadsheet->getActiveSheet()->getCell([2,$i])->getValue();
+            $term = $spreadsheet->getActiveSheet()->getCell([3,$i])->getValue();
+            $test = $spreadsheet->getActiveSheet()->getCell([4,$i])->getValue();
+            $class_id = $spreadsheet->getActiveSheet()->getCell([5,$i])->getValue();
+            $new_term_beginning = $spreadsheet->getActiveSheet()->getCell([6,$i])->getValue();
             if($new_term_beginning && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $new_term_beginning)){
                 $new_term_beginning = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($new_term_beginning);
                 $new_term_beginning = date_format($new_term_beginning, "Y-m-d");
             }
-            $possible_attendance = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(7,$i)->getValue();
-            $times_absent = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(8,$i)->getValue();
-            $times_late = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(9,$i)->getValue();
-            $comments = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(10,$i)->getValue();
-            $app = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(11,$i)->getValue();
-            $con = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(12,$i)->getValue();
-            $mmark = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(13,$i)->getValue();
-            $mapp = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(14,$i)->getValue();
-            $mcon = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(15,$i)->getValue();
-            $mcomm = $spreadsheet->getActiveSheet()->getCellByColumnAndRow(16,$i)->getValue();
+            $possible_attendance = $spreadsheet->getActiveSheet()->getCell([7,$i])->getValue();
+            $times_absent = $spreadsheet->getActiveSheet()->getCell([8,$i])->getValue();
+            $times_late = $spreadsheet->getActiveSheet()->getCell([9,$i])->getValue();
+            $comments = $spreadsheet->getActiveSheet()->getCell([10,$i])->getValue();
+            $dcomments = $spreadsheet->getActiveSheet()->getCell([11,$i])->getValue();
+            $mlate = $spreadsheet->getActiveSheet()->getCell([12,$i])->getValue();
+            $mabs = $spreadsheet->getActiveSheet()->getCell([13,$i])->getValue();
+            $mapp = $spreadsheet->getActiveSheet()->getCell([14,$i])->getValue();
+            $mcon = $spreadsheet->getActiveSheet()->getCell([15,$i])->getValue();
+            $auth = $spreadsheet->getActiveSheet()->getCell([16,$i])->getValue();
+            $resp = $spreadsheet->getActiveSheet()->getCell([17,$i])->getValue();
+            $coop = $spreadsheet->getActiveSheet()->getCell([18,$i])->getValue();
+            $cocurricular = $spreadsheet->getActiveSheet()->getCell([19,$i])->getValue();
+            $mcomments = $spreadsheet->getActiveSheet()->getCell([20,$i])->getValue();
+            $mgrade = $spreadsheet->getActiveSheet()->getCell([21,$i])->getValue();
             try {
                 //code...
                 $table1Record = Table1::create(
@@ -270,11 +275,16 @@ class Table1Controller extends Controller
                         'times_absent' => $times_absent,
                         'times_late' => $times_late,
                         'comments' => $comments,
-                        'app' => $app,
-                        'con' => $con,
-                        'mmark' => $mmark,
-                        'mapp' => $mapp,
-                        'mcomm' => $mcomm,
+                        'dcomments' => $dcomments,
+                        'mlate' => $mlate,
+                        'mabs' => $mabs,
+                        'mcon' => $mcon,
+                        'auth' => $auth,
+                        'resp' => $resp,
+                        'coop' => $coop,
+                        'cocurricular' => $cocurricular,
+                        'mcomments' => $mcomments,
+                        'mgrade' => $mgrade,
                     ]
                 );
                 //return $table1Record;
