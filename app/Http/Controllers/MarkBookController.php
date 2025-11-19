@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use App\Models\Table2;
+use App\Models\Table1;
 
 class MarkBookController extends Controller
 {
@@ -80,18 +81,38 @@ class MarkBookController extends Controller
             $formLevel == 1 ||
             $formLevel == 2 ||
             $formLevel == 3
-            )
+        )
         {
             if(
                 $term == $currentAcademicTerm && 
                 $academicYearId == $currentAcademicYearId
             ){
-                $students = Student::whereIn('class_id', $formClasses)
+                // $students = Student::whereIn('class_id', $formClasses)
+                // ->select(
+                //     'id',
+                //     'first_name',
+                //     'last_name',
+                //     'class_id'
+                // )
+                // ->orderBy('last_name')
+                // ->orderBy('first_name')
+                // ->get();
+
+                $students = Table1::join(
+                    'students',
+                    'students.id',
+                    'table1.student_id'
+                )
+                ->whereIn('table1.class_id', $formClasses)
+                ->where([
+                    'table1.year' => substr($academicYearId, 0, 4),
+                    'table1.term' => $term
+                ])
                 ->select(
-                    'id',
-                    'first_name',
-                    'last_name',
-                    'class_id'
+                    'table1.student_id',
+                    'students.first_name',
+                    'students.last_name',
+                    'table1.class_id'
                 )
                 ->orderBy('last_name')
                 ->orderBy('first_name')
@@ -112,25 +133,57 @@ class MarkBookController extends Controller
                 $term == $currentAcademicTerm && 
                 $academicYearId == $currentAcademicYearId
             ){
-                $students = Student::join(
+                // $students = Student::join(
+                //     'student_subjects',
+                //     'student_subjects.student_id',
+                //     'students.id',
+                //     'students.class_id'
+                // )
+                // ->whereIn('class_id', $formClasses)
+                // ->where([
+                //     ['subject_id', $subjectId]
+                // ])
+                // ->where(function($query) use ($employeeId) {
+                //     return $query->where('employee_id', $employeeId);
+                //                 // ->orWhereNull('employee_id');
+                // })
+                // ->select(
+                //     'students.id',
+                //     'first_name',
+                //     'last_name',
+                //     'class_id'
+                // )
+                // ->orderBy('last_name')
+                // ->orderBy('first_name')
+                // ->get();
+
+                $student = Table1::join(
                     'student_subjects',
                     'student_subjects.student_id',
-                    'students.id',
-                    'students.class_id'
+                    'table1.student_id',
+                    'table1.class_id'
                 )
-                ->whereIn('class_id', $formClasses)
+                ->join(
+                    'students',
+                    'students.id',
+                    'table1.student_id'
+                )
+                ->whereIn('table1.class_id', $formClasses)
                 ->where([
                     ['subject_id', $subjectId]
                 ])
+                ->where([
+                    'table1.year' => substr($academicYearId, 0, 4),
+                    'table1.term' => $term
+                ])
                 ->where(function($query) use ($employeeId) {
                     return $query->where('employee_id', $employeeId);
-                                // ->orWhereNull('employee_id');
                 })
                 ->select(
-                    'students.id',
-                    'first_name',
-                    'last_name',
-                    'class_id'
+                    'table1.student_id',
+                    'students.first_name',
+                    'students.last_name',
+                    'table1.class_id'
                 )
                 ->orderBy('last_name')
                 ->orderBy('first_name')
@@ -186,7 +239,7 @@ class MarkBookController extends Controller
             {
                 AssesmentCourse::firstOrCreate(
                     [
-                        'student_id' => $student->id,
+                        'student_id' => $student->student_id,
                         'assesment_employee_assignment_id' => $assesmentEmployeeAssignmentRecord->id,
                     ],
                     
@@ -204,7 +257,7 @@ class MarkBookController extends Controller
                     'assesment_course.assesment_employee_assignment_id'
                 )
                 ->where([
-                    ['student_id', $student->id],
+                    ['student_id', $student->student_id],
                     ['form_class_id', $student->class_id],
                     ['academic_year_id', $academicYearId],
                     ['term', $term],
