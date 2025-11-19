@@ -157,7 +157,7 @@ class MarkBookController extends Controller
                 // ->orderBy('first_name')
                 // ->get();
 
-                $student = Table1::join(
+                $students = Table1::join(
                     'student_subjects',
                     'student_subjects.student_id',
                     'table1.student_id',
