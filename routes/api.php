@@ -194,6 +194,8 @@ Route::delete('/subject-students', [StudentSubjectController::class, 'delete']);
 
 Route::post('/promote-students', [StudentController::class, 'promote']);
 
+Route::post('/schedule-term-report', [TermReportController::class, 'scheduleTermReport']);
+
 /*
 |--------------------------------------------------------------------------
 | Term Marks Routes

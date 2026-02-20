@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Table1;
 use App\Models\TermReport;
+use App\Jobs\PostTermReportJob;
+use Carbon\Carbon;
 
 class TermReportController extends Controller
 {
@@ -16,9 +18,11 @@ class TermReportController extends Controller
         ->get();
     }
 
-    public function store(Request $request){
+    public function store(Request $request)
+    {
+        $year = (int) substr($request->year, 0, 4);
         $term_report = TermReport::where([
-            ['year', $request->year],
+            ['year', $year],
             ['term', $request->term]
         ])->first();
 
@@ -56,5 +60,16 @@ class TermReportController extends Controller
         }
 
         return $table1Records;
+    }
+
+    public function scheduleTermReport(Request $request)
+    {
+        $runAt = Carbon::parse($request->run_at);
+
+        $year = (int) substr($request->year, 0, 4);
+
+        PostTermReportJob::dispatch($year, $request->term)->delay($runAt);
+
+        return response()->json(['message' => 'Scheduled successfully.']);
     }
 }
