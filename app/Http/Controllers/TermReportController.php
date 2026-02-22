@@ -12,7 +12,7 @@ class TermReportController extends Controller
 {
     public function show(){        
         return TermReport::join('terms', 'terms.id', 'term_reports.term')
-        ->select('year', 'term_reports.term', 'terms.title', 'posted', 'date_posted')
+        ->select('year', 'term_reports.term', 'terms.title', 'posted', 'date_posted', 'date_scheduled')
         ->orderBy('year', 'desc')
         ->orderBy('term', 'desc')
         ->get();
@@ -67,6 +67,13 @@ class TermReportController extends Controller
         $runAt = Carbon::parse($request->run_at);
 
         $year = (int) substr($request->year, 0, 4);
+
+        TermReport::where([
+            ['year', $year],
+            ['term', $request->term]
+        ])->update([
+            'date_scheduled' => $runAt
+        ]);
 
         PostTermReportJob::dispatch($year, $request->term)->delay($runAt);
 
