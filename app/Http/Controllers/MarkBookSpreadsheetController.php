@@ -26,9 +26,8 @@ class MarkBookSpreadsheetController extends Controller
         $formClassId = $request->formClass;
         $subjectId = $request->subjectId;
 
-        // return  $this->spreadsheetData($year, $term, $formLevel, $formClassId, $subjectId);
-
-        $response = new StreamedResponse(function () use($year, $term, $formLevel, $formClassId, $subjectId) {
+        $response = new StreamedResponse(function () use($year, $term, $formLevel, $formClassId, $subjectId) 
+        {
             $complete = false;
             $spreadsheet = null; 
             $formClasses = [];
@@ -81,22 +80,22 @@ class MarkBookSpreadsheetController extends Controller
 
                 $sheet = $spreadsheet->getSheet($index);
                 $dataHeaders = $this->spreadsheetHeaders($year, $term, $formLevel, $formClass, $subjectId);
-                $data = $this->spreadsheetData($year, $term, $formLevel, $formClass, $subjectId);
+                $spreadSheetData = $this->spreadsheetData($year, $term, $formLevel, $formClass, $subjectId);
 
                 $sheet->setCellValue(
-                    "A1",$formClass." Course Assesments \n".substr($year, 0, 4).'-'.substr($year, 4). " ".$termTitle
+                    "A1",$formClass." Course Assesments \n".substr($year, 0, 4).'-'.substr($year, 4). " Term: ".$termTitle
                 );
     
                 if($subjectId){
                     $sheet->setCellValue(
-                        "A1",$subjectTitle." Course Assesments \n".substr($year, 0, 4).'-'.substr($year, 4). " ".$termTitle
+                        "A1",$subjectTitle." Course Assesments \n".substr($year, 0, 4).'-'.substr($year, 4). " Term: ".$termTitle
                     );
                 }
                 
                 $sheet->getStyle('A1')->getAlignment()->setWrapText(true);
     
                 $sheet->fromArray($dataHeaders, NULL, 'A2');
-                $sheet->fromArray($data, NULL, 'A6');
+                $sheet->fromArray($spreadSheetData, NULL, 'A6');
     
                 $this->spreadsheetStyle($sheet);
     
@@ -162,7 +161,6 @@ class MarkBookSpreadsheetController extends Controller
         $currentTerm = $academicTermRecord ? $academicTermRecord->term : null;
         $currentYear = $academicTermRecord ? $academicTermRecord->academic_year_id : null;
 
-
         if($formClass && !$subjectId)
         {
             $students = AssesmentCourse::join(
@@ -205,7 +203,9 @@ class MarkBookSpreadsheetController extends Controller
                 ->get();
             }
         }
-        elseif($formClass && $subjectId && $formLevel < 4){
+        elseif($formClass && $subjectId && $formLevel < 4)
+        {
+            
             $students = AssesmentCourse::join(
                 'assesment_employee_assignments',
                 'assesment_employee_assignments.id',
@@ -236,56 +236,6 @@ class MarkBookSpreadsheetController extends Controller
                 $year == $currentYear
             ){
                 $students = Student::where([
-                    ['class_id', $formClass]
-                ])
-                ->select(
-                    'students.id as student_id',
-                    'first_name',
-                    'last_name',
-                    'class_id'
-                )
-                ->orderBy('last_name')
-                ->orderBy('first_name')
-                ->get();
-            }
-        }
-        elseif($formClass && $subjectId && $formLevel > 3){
-            $students = AssesmentCourse::join(
-                'assesment_employee_assignments',
-                'assesment_employee_assignments.id',
-                'assesment_course.assesment_employee_assignment_id'
-            )
-            ->join(
-                'students',
-                'students.id',
-                'assesment_course.student_id'
-            )
-            ->select(
-                'students.id as student_id',
-                'students.first_name',
-                'students.last_name'
-            )
-            ->where([
-                ['academic_year_id', $year],
-                ['term', $term],
-                ['subject_id', $subjectId],
-                ['form_class_id', $formClass]
-            ])
-            ->distinct()
-            ->get();
-
-            if(
-                sizeof($students) == 0 && 
-                $term == $currentTerm &&
-                $year == $currentYear
-            )
-            {
-                $students = Student::join(
-                    'student_subjects',
-                    'student_subjects.student_id',
-                    'students.id'
-                )
-                ->where([
                     ['class_id', $formClass]
                 ])
                 ->select(
@@ -329,13 +279,19 @@ class MarkBookSpreadsheetController extends Controller
                 sizeof($students) == 0 && 
                 $term == $currentTerm &&
                 $year == $currentYear
-            ){
-                $students = Student::where([
+            )
+            {
+                $students = Student::join(
+                    'student_subjects',
+                    'student_subjects.student_id',
+                    'students.id'
+                )
+                ->where([
                     ['class_id', $formClass],
-                    ['subject_id', $subjectId]
+                    ['student_subjects.subject_id', $subjectId]
                 ])
                 ->select(
-                    'id as student_id',
+                    'students.id as student_id',
                     'first_name',
                     'last_name',
                     'class_id'
@@ -345,6 +301,7 @@ class MarkBookSpreadsheetController extends Controller
                 ->get();
             }
         }
+        
 
         $subjects = TeacherLesson::where([
             ['academic_year_id', $year],
@@ -364,24 +321,6 @@ class MarkBookSpreadsheetController extends Controller
         ->orderBy('title')
         ->get();
             
-        // $subjects = DB::table('teacher_lessons')->where([
-        //     ['academic_year_id', $year],
-        //     ['form_class_id', $formClass]
-        // ])
-        // ->join(
-        //     'subjects',
-        //     'subjects.id',
-        //     'teacher_lessons.subject_id'
-        // )
-        // ->select(
-        //     'employee_id',
-        //     'subject_id',
-        //     'form_class_id',
-        //     'title'
-        // )
-        // ->orderBy('title')
-        // ->get();
-
         if($subjectId)
         {
             $subjects = TeacherLesson::where([
@@ -404,7 +343,8 @@ class MarkBookSpreadsheetController extends Controller
             ->get();
         }
 
-        foreach($students as $student){
+        foreach($students as $student)
+        {
             $record = [];
 
             array_push(

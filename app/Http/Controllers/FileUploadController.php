@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\URL;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
+use App\Models\FormClass;
 
 
 class FileUploadController extends Controller
@@ -140,6 +141,7 @@ class FileUploadController extends Controller
       $term = $request->term;
       $subjectId = $request->subjectId;
       $formClassId = $request->classId;
+      $formClasses = $request->formClasses;
       $employeeId = $request->employeeId;
 
       $request->file->storeAs('public', $fileName);
@@ -154,6 +156,9 @@ class FileUploadController extends Controller
       $markRowStart = 6;
       $assesmentNumber = 0;
       $courseMarks = 0;
+
+      $formClassRecord = FormClass::where('id', $formClasses[0])->first();
+      $formLevel = $formClassRecord ? $formClassRecord->form_level : null;
 
       for($i = $markColStart; $i <= $cols; $i++){
          $assesmentNumber++;
@@ -184,21 +189,42 @@ class FileUploadController extends Controller
                }
                $total = $sheet->getCell([$i,5])->getValue();
    
-               $assesmentEmployeeAssignment = AssesmentEmployeeAssignment::updateOrCreate(
-                  [
-                     'employee_id' => $employeeId,
-                     'academic_year_id' => $academicYearId,
-                     'term' => $term,
-                     'subject_id' => $subjectId,
-                     'form_class_id' => $formClassId,
-                     'assesment_number' => $assesmentNumber
-                  ],
-                  [
-                     'date' => $date,
-                     'topic' => $topic,
-                     'total' => $total
-                  ]
-               );
+               if($formLevel <= 3)
+               {
+                  $assesmentEmployeeAssignment = AssesmentEmployeeAssignment::updateOrCreate(
+                     [
+                        'employee_id' => $employeeId,
+                        'academic_year_id' => $academicYearId,
+                        'term' => $term,
+                        'subject_id' => $subjectId,
+                        'form_class_id' => $formClasses[0],
+                        'assesment_number' => $assesmentNumber
+                     ],
+                     [
+                        'date' => $date,
+                        'topic' => $topic,
+                        'total' => $total
+                     ]
+                  );
+               }
+               else{
+                  $assesmentEmployeeAssignment = AssesmentEmployeeAssignment::updateOrCreate(
+                     [
+                        'employee_id' => $employeeId,
+                        'academic_year_id' => $academicYearId,
+                        'term' => $term,
+                        'subject_id' => $subjectId,
+                        'form_class_id' => $formClassId,
+                        'assesment_number' => $assesmentNumber
+                     ],
+                     [
+                        'date' => $date,
+                        'topic' => $topic,
+                        'total' => $total
+                     ]
+                  );
+
+               }
    
                for($j = $markRowStart; $j <= $rows; $j++){
                   if($sheet->getCell([$i,$j])->getValue()){

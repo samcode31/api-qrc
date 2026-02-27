@@ -18,6 +18,7 @@ class MarkSheetController extends Controller
     protected $pdf;
     private $maxTermTest = 100;
     private $participationMaxTotal = 25;
+    CONST COURSE_WEIGHTING = 0.3;
 
 
     public function __construct(\App\Models\Pdf $pdf)
@@ -41,7 +42,7 @@ class MarkSheetController extends Controller
         $averages = array();
 
         $data = $this->markSheetData($year, $term, $class_id, $averages);
-        //return $data;
+        // return $data;
         $distinct_subjects = $this->distinctSubjects($year, $term, $class_id);
         $form_teacher_assignments = $this->formTeachers($year, $class_id);
         // return $form_teacher_assignments;
@@ -330,6 +331,32 @@ class MarkSheetController extends Controller
                         $total_marks += is_numeric($exam_mark) ? $exam_mark : 0;
                         $mark_record['exam_mark'] = is_null($exam_mark) ? 'Abs' : $exam_mark;
                     }
+                    elseif($term == 3)
+                    {
+                        $table2Term1Record = Table2::where([
+                            ['student_id', $student_id],
+                            ['year', $year],
+                            ['term', 1],
+                            ['subject_id', $subject_id]
+                        ])
+                        ->first();
+
+                        $table2Term2Record = Table2::where([
+                            ['student_id', $student_id],
+                            ['year', $year],
+                            ['term', 2],
+                            ['subject_id', $subject_id]
+                        ])
+                        ->first();
+
+                        $term1CourseMarkWeighted = $table2Term1Record ? $table2Term1Record->course_mark*self::COURSE_WEIGHTING/3 : 0;
+                        $term2CourseMarkWeighted = $table2Term2Record ? $table2Term2Record->course_mark/10 : 0;
+                        $term3CourseMarkWeighted = $course_mark*self::COURSE_WEIGHTING/3;
+                        $course_mark = number_format($term1CourseMarkWeighted + $term2CourseMarkWeighted + $term3CourseMarkWeighted,1);
+                        $total_marks += $term1CourseMarkWeighted + $term2CourseMarkWeighted + $term3CourseMarkWeighted;
+                        $total_marks += is_numeric($exam_mark) ? $exam_mark : 0;
+                        $mark_record['exam_mark'] = number_format(($term1CourseMarkWeighted + $term2CourseMarkWeighted + $term3CourseMarkWeighted) + $exam_mark ,1);
+                    }
                     else {
                         $total_marks += is_numeric($course_mark) ? number_format($course_mark*0.3,1) : 0;
                         $total_marks += is_numeric($exam_mark) ? number_format($exam_mark,1) : 0;
@@ -347,7 +374,7 @@ class MarkSheetController extends Controller
                 array_push($student_term_marks, $mark_record);
             }
 
-            $average = ($total_subjects != 0) ? number_format($total_marks/$total_subjects, 2) : null;
+            $average = ($total_subjects != 0) ? number_format($total_marks/$total_subjects, 1) : null;
             if($average) $averages[] = $average;
             $student_record['total_marks'] = ($total_marks != 0) ? $total_marks : null;
             $student_record['average'] = $average;
@@ -487,7 +514,7 @@ class MarkSheetController extends Controller
         for($row = 2; $row <= $highestRow; ++$row){
             $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colStart);
             $sheet->getStyle($column.$row)
-            ->getNumberFormat()->setFormatCode('#0.00');
+            ->getNumberFormat()->setFormatCode('#0.0');
         }
 
         for($col = 1; $col < $subjectMarksColStart; ++$col){
@@ -665,6 +692,32 @@ class MarkSheetController extends Controller
                         $total_marks += is_numeric($exam_mark) ? $exam_mark : 0;
                         $mark_record['exam_mark'] = is_null($exam_mark) ? 'Abs' : $exam_mark;
                     }
+                    elseif($term == 3)
+                    {
+                        $table2Term1Record = Table2::where([
+                            ['student_id', $student_id],
+                            ['year', $year],
+                            ['term', 1],
+                            ['subject_id', $subject_id]
+                        ])
+                        ->first();
+
+                        $table2Term2Record = Table2::where([
+                            ['student_id', $student_id],
+                            ['year', $year],
+                            ['term', 2],
+                            ['subject_id', $subject_id]
+                        ])
+                        ->first();
+
+                        $term1CourseMarkWeighted = $table2Term1Record ? $table2Term1Record->course_mark*self::COURSE_WEIGHTING/3 : 0;
+                        $term2CourseMarkWeighted = $table2Term2Record ? $table2Term2Record->course_mark/10 : 0;
+                        $term3CourseMarkWeighted = $course_mark*self::COURSE_WEIGHTING/3;
+                        $course_mark = number_format($term1CourseMarkWeighted + $term2CourseMarkWeighted + $term3CourseMarkWeighted,1);
+                        $total_marks += $term1CourseMarkWeighted + $term2CourseMarkWeighted + $term3CourseMarkWeighted;
+                        $total_marks += is_numeric($exam_mark) ? $exam_mark : 0;
+                        $mark_record['exam_mark'] = is_null($course_mark) && is_null($exam_mark) ? 'Abs' : number_format(($term1CourseMarkWeighted + $term2CourseMarkWeighted + $term3CourseMarkWeighted) + $exam_mark ,1);
+                    }
                     else {
                         $total_marks += is_numeric($course_mark) ? number_format($course_mark*0.3,1) : 0;
                         $total_marks += is_numeric($exam_mark) ? number_format($exam_mark,1) : 0;
@@ -681,7 +734,7 @@ class MarkSheetController extends Controller
                 array_push($student_marks, $mark_record);
             }
 
-            $average = ($total_subjects != 0) ? number_format($total_marks/$total_subjects,2) : null;
+            $average = ($total_subjects != 0) ? number_format($total_marks/$total_subjects,1) : null;
             $student_record['average'] = $average;
             $student_record['marks'] = $student_marks;
             array_push($data, $student_record);
