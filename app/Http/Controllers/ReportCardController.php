@@ -535,7 +535,7 @@ class ReportCardController extends Controller
                     $mAbs, 
                     $mApp,
                     $mCon,
-                    $mComments."\n\t",
+                    rtrim($mComments)."\n\t",
                     implode(" & ", $musicTeachers)
                 ));   
             }

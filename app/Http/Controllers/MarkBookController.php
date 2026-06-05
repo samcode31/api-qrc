@@ -553,7 +553,8 @@ class MarkBookController extends Controller
                 // $term,                
             );
 
-            for($i = 1; $i <= $defaultAssesments; $i++){
+            for($i = 1; $i <= $defaultAssesments; $i++)
+            {
                 $courseMark = AssesmentCourse::join(
                     'assesment_employee_assignments',
                     'assesment_employee_assignments.id',

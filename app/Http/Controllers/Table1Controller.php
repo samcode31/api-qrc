@@ -18,6 +18,8 @@ use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 
 class Table1Controller extends Controller
 {
+    CONST EXAM_WEIGHTING = 1;
+    CONST COURSE_WEIGHTING = 0.3;
     public function register(Request $request)
     {
 
@@ -142,7 +144,21 @@ class Table1Controller extends Controller
     {
         $year = $request->year;
         $term = $request->term;
-        $class_id = $request->class_id;
+        $classId = $request->class_id;
+
+        $formClassRecord = FormClass::where('id', $classId)->first();
+        $formLevel = $formClassRecord ? $formClassRecord->form_level : null;
+
+        $classRecords = Table1::where([
+            ['year', $year],
+            ['term', $term],
+            ['class_id', $classId]
+        ])
+        ->select('student_id')
+        ->get();
+
+        $classAverages = $this->classAverages($classRecords, $year, $term, $formLevel);
+        $median = $this->median($classAverages);
 
         $records = Table1::join('students', 'students.id', 'table1.student_id')
         ->join('form_classes', 'table1.class_id', 'form_classes.id' )
@@ -150,13 +166,16 @@ class Table1Controller extends Controller
         ->where([
             ['year', $year],
             ['term', $term],
-            ['table1.class_id', $class_id]
+            ['table1.class_id', $classId]
         ])
         ->orderBy('last_name')
         ->orderBy('first_name')
         ->get();
 
-        return ResourcesTable1::collection($records);
+        return ResourcesTable1::collection($records)
+        ->additional([
+            'median' => $median,
+        ]);
     }
 
     public function formClassesChangeClass ()
@@ -445,4 +464,125 @@ class Table1Controller extends Controller
 
         return $data;
     }
+
+    private function classAverages($table1Records, $year, $term, $formLevel)
+    {
+        $data = array();
+        foreach($table1Records as $record){
+            $studentId = $record->student_id;
+            $averageMark = $this->averageMark($year, $term, $studentId, $formLevel);
+            if(!$averageMark) continue;
+            $data [] = $averageMark;
+        }
+        rsort($data);
+        return $data;
+    }
+
+    private function averageMark($year, $term, $studentId, $formLevel)
+    {
+        $table2Records = Table2::where([
+            ['year', $year],
+            ['term', $term],
+            ['student_id', $studentId]
+        ])
+        ->get();
+        $totalMarks = 0;
+        $subjects = 0;
+        $average = null;
+        
+        if(
+            $term == 1 && 
+            (
+                $formLevel == 6 || 
+                $formLevel == 7 || 
+                $formLevel == 5
+            )
+        ){ 
+            foreach($table2Records as $record){
+                $subjects++;
+                $totalMarks += $record->course_mark;
+            }
+        }
+
+        elseif($term == 2 && (
+            $formLevel == 1 ||
+            $formLevel == 2 ||
+            $formLevel == 3 ||
+            $formLevel == 4
+        )){
+            foreach($table2Records as $record){
+                $subjects++;
+                $totalMarks += $record->course_mark;
+            }
+            
+        }
+
+        elseif($term == 2 && $formLevel > 4){
+            foreach($table2Records as $record){
+                $subjects++;
+                $totalMarks += $record->exam_mark;
+            }
+        }
+
+        elseif($term == 3)
+        {
+            foreach($table2Records as $record){
+                $subjects++;
+                $table2Term1Record = Table2::where([
+                    ['student_id', $studentId],
+                    ['year', $year],
+                    ['term', 1],
+                    ['subject_id', $record->subject_id]
+                ])
+                ->first();
+
+                $table2Term2Record = Table2::where([
+                    ['student_id', $studentId],
+                    ['year', $year],
+                    ['term', 2],
+                    ['subject_id', $record->subject_id]
+                ])
+                ->first();
+                
+                
+                $term1CourseMarkWeighted = $table2Term1Record ? $table2Term1Record->course_mark*self::COURSE_WEIGHTING/3 : 0;
+                $term2CourseMarkWeighted = $table2Term2Record ? $table2Term2Record->course_mark/10 : 0;
+                $term3CourseMarkWeighted = $record->course_mark*self::COURSE_WEIGHTING/3;
+                $course_mark = number_format($term1CourseMarkWeighted + $term2CourseMarkWeighted + $term3CourseMarkWeighted,1);
+    
+                $totalMarks += $course_mark + $record->exam_mark*self::EXAM_WEIGHTING;
+            }
+
+        }
+
+        else{
+            foreach($table2Records as $record){
+                $subjects++;
+                $totalMarks += $record->course_mark*self::COURSE_WEIGHTING + $record->exam_mark*self::EXAM_WEIGHTING;
+            }
+        }
+
+        $average = $subjects != 0 ? number_format($totalMarks/$subjects, 1) : null;
+
+        return $average;
+        // return $subjects;
+    }
+
+    private function median($classAverages)
+    {
+        $count = count($classAverages);
+
+        if($count == 0) return null;
+
+        if($count % 2 == 1)
+        {
+            $middleIndex = floor($count / 2);
+            return $classAverages[$middleIndex];
+        }
+
+        $middleIndex1 = $count / 2 -1;
+        $middleIndex2 = $middleIndex1 + 1;
+        return ($classAverages[$middleIndex1] + $classAverages[$middleIndex2]) / 2;
+    }
+
 }
