@@ -78,19 +78,35 @@ class ReportCardController extends Controller
             $reportPeriod = $termStart.' - '.$termEnd;
         }
 
-        $table1Records = Table1::where([
+        $table1Records = Table1::join(
+            'students', 
+            'table1.student_id', 
+            'students.id'
+        )
+        ->where([
             ['student_id', $studentId],
             ['year', $year],
             ['term', $term]
-        ])->get();
+        ])
+        ->select('table1.*', 'students.first_name', 'students.last_name')
+        ->get();
 
         if($classId)
         {
-            $table1Records = Table1::where([
+            $table1Records = Table1::join(
+                'students',
+                'students.id',
+                'table1.student_id'
+            )
+            ->where([
                 ['year', $year],
                 ['term', $term],
-                ['class_id', $classId]
-            ])->get();
+                ['table1.class_id', $classId]
+            ])
+            ->select('table1.*', 'students.first_name', 'students.last_name')
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get();
                 
         } else {
             $classId = $table1Records[0]->class_id;
