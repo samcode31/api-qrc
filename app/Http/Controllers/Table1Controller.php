@@ -174,7 +174,7 @@ class Table1Controller extends Controller
 
         return ResourcesTable1::collection($records)
         ->additional([
-            'median' => $median,
+            'median' => number_format($median,2)
         ]);
     }
 
