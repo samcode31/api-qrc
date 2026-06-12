@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\DB;
 
 class Table2Controller extends Controller
 {
+    CONST EXAM_WEIGHTING = 1;
+    CONST COURSE_WEIGHTING = 0.3;
     public function show(Request $request)
     {        
         $classId = $request->class_id;
