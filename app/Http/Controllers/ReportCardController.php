@@ -49,6 +49,23 @@ class ReportCardController extends Controller
         return $table2Record[0]->subject;
     }
 
+    public function createTest(Request $request)
+    {
+        $studentId = $request->input('studentId');
+        $year = $request->input('year');
+        $term = $request->input('term');
+        $classId = $request->input('classId');
+        $studentAccess = $request->input('studentAccess');
+
+        $this->pdf->AddPage('P', 'Legal');
+        $this->pdf->SetFont('Times', 'B', '16');       
+        $this->pdf->MultiCell(0, 8, "Test", 0, 'C' );
+        $pdfContent = $this->pdf->Output('S', 'ReportCard.pdf');
+        return response($pdfContent, 200)
+        ->header('Content-Type', 'application/pdf')
+        ->header('Content-Disposition', 'inline; filename="ReportCard.pdf"');
+    }
+
     public function create(Request $request)
     {
         date_default_timezone_set('America/Caracas');
@@ -109,7 +126,7 @@ class ReportCardController extends Controller
             ->get();
                 
         } else {
-            $classId = $table1Records[0]->class_id;
+            $classId = sizeof($table1Records) > 0 ? $table1Records[0]->class_id : null;
         }
 
         $classRecords = Table1::where([
@@ -664,7 +681,11 @@ class ReportCardController extends Controller
         }
 
         
-        $this->pdf->Output('I', 'ReportCard.pdf');
+        // $this->pdf->Output('I', 'ReportCard.pdf');
+        $pdfContent = $this->pdf->Output('S', 'ReportCard.pdf');
+        return response($pdfContent, 200)
+        ->header('Content-Type', 'application/pdf')
+        ->header('Content-Disposition', 'inline; filename="ReportCard.pdf"');
         exit;
     }
 

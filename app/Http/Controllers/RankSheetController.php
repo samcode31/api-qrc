@@ -118,9 +118,13 @@ class RankSheetController extends Controller
         $this->pdf->Cell(98, 6, date("l, F j, Y"), 0, 0, 'L');
         $this->pdf->Cell(98, 6, 'Page '.$this->pdf->PageNo().'of {nb}', 0, 0, 'R');
 
+        $pdfContent = $this->pdf->Output('S', 'RankSheet.pdf');
+        return response($pdfContent, 200)
+        ->header('Content-Type', 'application/pdf')
+        ->header('Content-Disposition', 'inline; filename="RankSheet.pdf"');
+        exit;
 
-
-        $this->pdf->Output('I', 'ReportCard.pdf');
+        // $this->pdf->Output('I', 'ReportCard.pdf');
         exit;
     }
 

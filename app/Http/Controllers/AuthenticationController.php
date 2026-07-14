@@ -90,10 +90,10 @@ class AuthenticationController extends Controller
 
         }
 
-        $user = UserStudent::whereStudentId($student_id)->first();
+        $userStudent = UserStudent::whereStudentId($student_id)->first();
 
-        if(!$user) return abort(500, 'Invalid Student ID');
-        $user_id = $user->id;
+        if(!$userStudent) return abort(500, 'Invalid Student ID');
+        $user_id = $userStudent->id;
 
         if(Auth::guard('student')->attempt(['student_id' => $student_id, 'password' => $password])){
             AuditLoginStudent::create([
@@ -104,7 +104,7 @@ class AuthenticationController extends Controller
             $userStudent->token = $token;
             return $userStudent;
         }
-        
+
         if(Auth::guard('student')->loginUsingId($user_id) && Auth::guard('admin')->attempt(['name' => 'Admin', 'password' => $password])){
             // return UserAdmin::whereId(1)->first();
             $token = $userStudent->createToken('apptoken')->plainTextToken;
