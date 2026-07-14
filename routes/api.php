@@ -65,25 +65,6 @@ use App\Http\Controllers\DBFixController;
 
 /*
 |--------------------------------------------------------------------------
-| Setup Routes
-|--------------------------------------------------------------------------
-|
-*/
-
-Route::post('/admin', [UserController::class, 'createAdmin']);
-
-Route::post('/admin-user-2', [UserController::class, 'registerAdmin2']);
-
-Route::post('/admin-office', [UserController::class, 'registerOfficeAdmin']);
-
-Route::post('/admin-deans', [UserController::class, 'registerDeans']);
-
-Route::post('/admin-hods', [UserController::class, 'registerHODs']);
-
-Route::get('/admin-permissions', [UserAdminPermissionsController::class, 'show']);
-
-/*
-|--------------------------------------------------------------------------
 | Authentication Routes
 |--------------------------------------------------------------------------
 |
@@ -94,6 +75,29 @@ Route::post('/employee-login', [AuthenticationController::class, 'authenticateEm
 
 Route::post('/login-student', [AuthenticationController::class, 'authenticateStudent']);
 
+/*
+|--------------------------------------------------------------------------
+| Setup Routes
+|--------------------------------------------------------------------------
+|
+*/
+Route::group(['middleware' => ['auth:sanctum']], function () 
+{
+    Route::post('/admin', [UserController::class, 'createAdmin']);
+
+    Route::post('/admin-user-2', [UserController::class, 'registerAdmin2']);
+
+    Route::post('/admin-office', [UserController::class, 'registerOfficeAdmin']);
+
+    Route::post('/admin-deans', [UserController::class, 'registerDeans']);
+
+    Route::post('/admin-hods', [UserController::class, 'registerHODs']);
+
+    Route::get('/admin-permissions', [UserAdminPermissionsController::class, 'show']);
+});
+
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -101,100 +105,102 @@ Route::post('/login-student', [AuthenticationController::class, 'authenticateStu
 |--------------------------------------------------------------------------
 |
 */
+Route::group(['middleware' => ['auth:sanctum']], function () 
+{
+    Route::get('/current-period', [AcademicTermController::class, 'show']);
 
-Route::get('/current-period', [AcademicTermController::class, 'show']);
+    Route::post('/current-period', [AcademicTermController::class, 'store']);
 
-Route::post('/current-period', [AcademicTermController::class, 'store']);
+    Route::get('/academic-years', [AcademicYearController::class, 'show']);
 
-Route::get('/academic-years', [AcademicYearController::class, 'show']);
+    Route::get('/form-classes-list', [FormClassController::class, 'show']);
 
-Route::get('/form-classes-list', [FormClassController::class, 'show']);
+    Route::get('/employees', [EmployeeController::class, 'show']);
 
-Route::get('/employees', [EmployeeController::class, 'show']);
+    Route::get('/employee-posts', [EmployeePostController::class, 'show']);
 
-Route::get('/employee-posts', [EmployeePostController::class, 'show']);
+    Route::post('/employee', [EmployeeController::class, "store"]);
 
-Route::post('/employee', [EmployeeController::class, "store"]);
+    Route::post('/update-employee', [EmployeeController::class, 'update']);
 
-Route::post('/update-employee', [EmployeeController::class, 'update']);
+    Route::post('/reset-employee-password', [UserController::class, 'resetEmployeePassword']);
 
-Route::post('/reset-employee-password', [UserController::class, 'resetEmployeePassword']);
+    Route::get('/student-address-town', [TownController::class, 'showDistinct']);
 
-Route::get('/student-address-town', [TownController::class, 'showDistinct']);
+    Route::get('/student-parent-occupation', [OccupationController::class, 'show']);
 
-Route::get('/student-parent-occupation', [OccupationController::class, 'show']);
+    Route::get('/admin-students', [AdminStudentController::class, 'show']);
 
-Route::get('/admin-students', [AdminStudentController::class, 'show']);
+    Route::get('/student-upload-template', [StudentUploadTemplateController::class, 'download']);
 
-Route::get('/student-upload-template', [StudentUploadTemplateController::class, 'download']);
+    Route::post('/store-registration-file', [FileUploadController::class, 'storeRegistration']);
 
-Route::post('/store-registration-file', [FileUploadController::class, 'storeRegistration']);
+    Route::post('/upload-new-students', [StudentController::class, 'uploadNewStudents']);
 
-Route::post('/upload-new-students', [StudentController::class, 'uploadNewStudents']);
+    Route::get('/spreadsheet-student-data', [SpreadsheetStudentDataController::class, 'download']);
 
-Route::get('/spreadsheet-student-data', [SpreadsheetStudentDataController::class, 'download']);
+    Route::get('/registration-form', [RegistrationFormController::class, 'createPDF']);
 
-Route::get('/registration-form', [RegistrationFormController::class, 'createPDF']);
+    Route::post('/student', [StudentController::class, 'store']);
 
-Route::post('/student', [StudentController::class, 'store']);
+    Route::post('/reset-password-student', [UserController::class, 'resetPasswordStudent']);
 
-Route::post('/reset-password-student', [UserController::class, 'resetPasswordStudent']);
+    Route::get('/subjects', [SubjectController::class, 'show']);
 
-Route::get('/subjects', [SubjectController::class, 'show']);
+    Route::post('/subject', [SubjectController::class, 'store']);
 
-Route::post('/subject', [SubjectController::class, 'store']);
+    Route::delete('/subject', [SubjectController::class, 'delete']);
 
-Route::delete('/subject', [SubjectController::class, 'delete']);
+    Route::get('/form-teacher-class', [FormTeacherController::class, 'show']);
 
-Route::get('/form-teacher-class', [FormTeacherController::class, 'show']);
+    Route::post('/form-teacher-class', [FormTeacherController::class, 'store']);
 
-Route::get('/admin-teacher-lessons', [AdminTeacherLessonController::class, 'show']);
+    Route::get('/admin-teacher-lessons', [AdminTeacherLessonController::class, 'show']);
 
-Route::post('/form-teacher-class', [FormTeacherController::class, 'store']);
+    Route::delete('/admin-teacher-lessons', [AdminTeacherLessonController::class, 'delete']);
 
-Route::delete('/admin-teacher-lessons', [AdminTeacherLessonController::class, 'delete']);
+    Route::post('/admin-teacher-lesson', [AdminTeacherLessonController::class, 'store']);
 
-Route::post('/admin-teacher-lesson', [AdminTeacherLessonController::class, 'store']);
+    Route::get('/user-employee', [UserController::class, 'userEmployee']);
 
-Route::get('/user-employee', [UserController::class, 'userEmployee']);
+    Route::post('/employee-change-password', [UserController::class, 'employeeChangePassword']);
 
-Route::post('/employee-change-password', [UserController::class, 'employeeChangePassword']);
+    Route::get('/employee', [EmployeeController::class, 'index']);
 
-Route::get('/employee', [EmployeeController::class, 'index']);
+    Route::post('/clear-flags', [Table1Controller::class, 'clearFlags']);
 
-Route::post('/clear-flags', [Table1Controller::class, 'clearFlags']);
+    Route::post('/term-reports-register', [Table1Controller::class, 'register']);
 
-Route::post('/term-reports-register', [Table1Controller::class, 'register']);
+    Route::get('/term-reports-posted', [TermReportController::class, 'show']); 
 
-Route::get('/term-reports-posted', [TermReportController::class, 'show']); 
+    Route::post('/post-term-reports', [TermReportController::class, 'store']);
 
-Route::post('/post-term-reports', [TermReportController::class, 'store']);
+    Route::post('/possible-attendance', [Table1Controller::class, 'storePossibleAttendance']);
 
-Route::post('/possible-attendance', [Table1Controller::class, 'storePossibleAttendance']);
+    Route::post('/new-term-beginning', [Table1Controller::class, 'storeNewTermBeginning']);
 
-Route::post('/new-term-beginning', [Table1Controller::class, 'storeNewTermBeginning']);
+    Route::post('/promotion', [PromotionController::class, 'store']);
 
-Route::post('/promotion', [PromotionController::class, 'store']);
+    Route::post('/promotion-undo', [PromotionController::class, 'undo']);
 
-Route::post('/promotion-undo', [PromotionController::class, 'undo']);
+    Route::get('/dean-form-classes', [FormDeanController::class, 'show']);
 
-Route::get('/dean-form-classes', [FormDeanController::class, 'show']);
+    Route::post('/dean-form-classes', [FormDeanController::class, 'store']);
 
-Route::post('/dean-form-classes', [FormDeanController::class, 'store']);
+    Route::get('/form-levels', [FormClassController::class, 'showFormLevels']);
 
-Route::get('/form-levels', [FormClassController::class, 'showFormLevels']);
+    Route::get('/subject-students', [StudentSubjectController::class, 'show']);
 
-Route::get('/subject-students', [StudentSubjectController::class, 'show']);
+    Route::post('/subject-students', [StudentSubjectController::class, 'store']);
 
-Route::post('/subject-students', [StudentSubjectController::class, 'store']);
+    Route::post('/subject-students-batch', [StudentSubjectController::class, 'storeBatch']);
 
-Route::post('/subject-students-batch', [StudentSubjectController::class, 'storeBatch']);
+    Route::delete('/subject-students', [StudentSubjectController::class, 'delete']);
 
-Route::delete('/subject-students', [StudentSubjectController::class, 'delete']);
+    Route::post('/promote-students', [StudentController::class, 'promote']);
 
-Route::post('/promote-students', [StudentController::class, 'promote']);
-
-Route::post('/schedule-term-report', [TermReportController::class, 'scheduleTermReport']);
+    Route::post('/schedule-term-report', [TermReportController::class, 'scheduleTermReport']);
+});    
 
 /*
 |--------------------------------------------------------------------------
@@ -202,177 +208,189 @@ Route::post('/schedule-term-report', [TermReportController::class, 'scheduleTerm
 |--------------------------------------------------------------------------
 |
 */
+Route::group(['middleware' => ['auth:sanctum']], function () 
+{
+    Route::get('/weekly-test', [StudentWeeklyTestController::class, 'show']);
 
-Route::get('/weekly-test', [StudentWeeklyTestController::class, 'show']);
+    Route::get('/weekly-test-subjects', [StudentWeeklyTestController::class, 'showSubjects']);
 
-Route::get('/weekly-test-subjects', [StudentWeeklyTestController::class, 'showSubjects']);
+    Route::post('/weekly-test', [StudentWeeklyTestController::class, 'post']);
 
-Route::post('/weekly-test', [StudentWeeklyTestController::class, 'post']);
+    Route::post('/weekly-test-subject', [StudentWeeklyTestController::class, 'postSubjectWeeklyTest']);
 
-Route::post('/weekly-test-subject', [StudentWeeklyTestController::class, 'postSubjectWeeklyTest']);
+    Route::delete('/weekly-test-subject', [StudentWeeklyTestController::class, 'delete']);
 
-Route::delete('/weekly-test-subject', [StudentWeeklyTestController::class, 'delete']);
+    Route::get('/teacher-subjects', [TeacherSubjectController::class, 'show']);
 
-Route::get('/teacher-subjects', [TeacherSubjectController::class, 'show']);
+    Route::get('/class-assignments', [StudentController::class, 'getClassAssignments']);
 
-Route::get('/class-assignments', [StudentController::class, 'getClassAssignments']);
+    Route::get('/subjects-offered', [StudentSubjectController::class, 'showAll']);
 
-Route::get('/subjects-offered', [StudentSubjectController::class, 'showAll']);
+    Route::get('/table1', [Table1Controller::class, 'termRecords']);
 
-Route::get('/table1', [Table1Controller::class, 'termRecords']);
-
-Route::get('/table2', [Table2Controller::class, 'termRecords']);
+    Route::get('/table2', [Table2Controller::class, 'termRecords']);
+});
 
 /*
 |--------------------------------------------------------------------------
 | Term Test Reports
 |--------------------------------------------------------------------------
 */
+Route::group(['middleware' => ['auth:sanctum']], function () 
+{
+    Route::get('/teacher-lessons', [TeacherLessonController::class, 'show']);
 
-Route::get('/teacher-lessons', [TeacherLessonController::class, 'show']);
+    Route::get('/teacher-lesson-students', [Table2Controller::class, 'show']);
 
-Route::get('/teacher-lesson-students', [Table2Controller::class, 'show']);
+    Route::post('/table2', [Table2Controller::class, 'store']);
 
-Route::post('/table2', [Table2Controller::class, 'store']);
-
-Route::post('/import-weekly-tests', [Table2Controller::class, 'importAssesments']);
+    Route::post('/import-weekly-tests', [Table2Controller::class, 'importAssesments']);
+});
 
 /*
 |--------------------------------------------------------------------------
 | Edit View Term Details
 |--------------------------------------------------------------------------
 */
-Route::get('/form-classes', [Table1Controller::class, 'formClasses']);
+Route::group(['middleware' => ['auth:sanctum']], function () 
+{
+    Route::get('/form-classes', [Table1Controller::class, 'formClasses']);
 
-Route::get('/form-classes-change-class', [Table1Controller::class, 'formClassesChangeClass']);
+    Route::get('/form-classes-change-class', [Table1Controller::class, 'formClassesChangeClass']);
 
-Route::get('/edit-view-term-details/students-registered', [Table1Controller::class, 'show']);
+    Route::get('/edit-view-term-details/students-registered', [Table1Controller::class, 'show']);
 
-Route::get('/student-table2-records', [Table2Controller::class, 'studentRecords']);
+    Route::get('/student-table2-records', [Table2Controller::class, 'studentRecords']);
 
-Route::post('/table1', [Table1Controller::class, 'store']);
+    Route::post('/table1', [Table1Controller::class, 'store']);
 
-Route::post('/table2-record-delete', [Table2Controller::class, 'delete']);
+    Route::post('/table2-record-delete', [Table2Controller::class, 'delete']);
 
-Route::post('/update-table2', [Table2Controller::class, 'update']);
+    Route::post('/update-table2', [Table2Controller::class, 'update']);
 
-Route::get('/co-curriculars', [CoCurricularController::class, 'show']);
+    Route::get('/co-curriculars', [CoCurricularController::class, 'show']);
 
-Route::post('/change-class', [Table1Controller::class, 'changeClass']);
+    Route::post('/change-class', [Table1Controller::class, 'changeClass']);
 
-Route::get('/music-classes', [TeacherLessonController::class, 'musicClasses']);
-
+    Route::get('/music-classes', [TeacherLessonController::class, 'musicClasses']);
+});
 
 /*
 |--------------------------------------------------------------------------
 | Reports
 |--------------------------------------------------------------------------
 */
-Route::get('/report-card', [ReportCardController::class, 'create']);
+Route::group(['middleware' => ['auth:sanctum']], function () 
+{
+    Route::get('/report-card', [ReportCardController::class, 'create']);
 
-Route::get('/rank-sheet', [RankSheetController::class, 'show']);
+    Route::get('/rank-sheet', [RankSheetController::class, 'show']);
 
-Route::get('/mark-sheet', [MarkSheetController::class, 'show']);
+    Route::get('/mark-sheet', [MarkSheetController::class, 'show']);
 
-Route::get('/report-card-access-logs', [ReportCardAccessLogController::class, 'show']);
+    Route::get('/report-card-access-logs', [ReportCardAccessLogController::class, 'show']);
 
-Route::get('/report-card-terms', [Table1Controller::class, 'showReportTerms']);
+    Route::get('/report-card-terms', [Table1Controller::class, 'showReportTerms']);
 
-Route::get('/report-failed-logins', [ReportLoginFailedController::class, 'show']);
+    Route::get('/report-failed-logins', [ReportLoginFailedController::class, 'show']);
 
-Route::get('/no-logins-student', [ReportStudentNoLoginsController::class, 'show']);
+    Route::get('/no-logins-student', [ReportStudentNoLoginsController::class, 'show']);
 
-Route::get('/student-subject-report', [ReportStudentSubjectController::class, 'show']);
+    Route::get('/student-subject-report', [ReportStudentSubjectController::class, 'show']);
 
-Route::get('/mark-sheet-excel', [MarkSheetController::class, 'download']);
-
+    Route::get('/mark-sheet-excel', [MarkSheetController::class, 'download']);
+});
 
 /*
 |--------------------------------------------------------------------------
 | Student Registration
 |--------------------------------------------------------------------------
 */
+Route::group(['middleware' => ['auth:sanctum']], function () 
+{
+    Route::get('/students', [StudentController::class, 'show']);
 
-Route::get('/students', [StudentController::class, 'show']);
+    Route::get('/user', [UserController::class, 'user']);
 
-Route::get('/user', [UserController::class, 'user']);
+    Route::post('/change-password-student', [UserController::class, 'changePassword']);
 
-Route::post('/change-password-student', [UserController::class, 'changePassword']);
+    Route::get('/student-record', [StudentController::class, 'index']);
 
-Route::get('/student-record', [StudentController::class, 'index']);
+    Route::get('/student-registration-all', [StudentRegistrationController::class, 'showAll']);
 
-Route::get('/student-registration-all', [StudentRegistrationController::class, 'showAll']);
+    Route::get('/houses', [HouseController::class, 'show']);
 
-Route::get('/houses', [HouseController::class, 'show']);
+    Route::get('/towns', [TownController::class, 'show']);
 
-Route::get('/towns', [TownController::class, 'show']);
+    Route::get('/religions', [ReligionController::class, 'show']);
 
-Route::get('/religions', [ReligionController::class, 'show']);
+    Route::get('/ethnic-groups', [EthnicGroupController::class, 'show']);
 
-Route::get('/ethnic-groups', [EthnicGroupController::class, 'show']);
+    Route::get('/regional-corporation', [RegionalCorporationController::class, 'show']);
 
-Route::get('/regional-corporation', [RegionalCorporationController::class, 'show']);
+    Route::get('/student-registration', [StudentRegistrationController::class, 'show']);
 
-Route::get('/student-registration', [StudentRegistrationController::class, 'show']);
+    Route::post('/student-registration', [StudentRegistrationController::class, 'store']);
 
-Route::post('/student-registration', [StudentRegistrationController::class, 'store']);
+    Route::get('/get-files', [FileUploadController::class, 'getFiles']);
 
-Route::get('/get-files', [FileUploadController::class, 'getFiles']);
+    Route::post('/store-file', [FileUploadController::class, 'fileStore']);
 
-Route::post('/store-file', [FileUploadController::class, 'fileStore']);
+    Route::get('/registration-form', [RegistrationFormController::class, 'createPDF']);
 
-Route::get('/registration-form', [RegistrationFormController::class, 'createPDF']);
+    Route::delete('/file', [FileUploadController::class, 'delete']);
 
-Route::delete('/file', [FileUploadController::class, 'delete']);
-
-Route::get('/registration-data', [StudentController::class, 'data']);
-
+    Route::get('/registration-data', [StudentController::class, 'data']);
+});
 /*
 |--------------------------------------------------------------------------
 | Upload Routes
 |--------------------------------------------------------------------------
 */
+Route::group(['middleware' => ['auth:sanctum']], function () 
+{
+    Route::post('/upload-classes',[FormClassController::class, 'upload']);
 
-Route::post('/upload-classes',[FormClassController::class, 'upload']);
+    Route::post('/upload-subjects', [SubjectController::class, 'upload']);
 
-Route::post('/upload-subjects', [SubjectController::class, 'upload']);
+    Route::post('/upload-employees', [EmployeeController::class, 'upload']);
 
-Route::post('/upload-employees', [EmployeeController::class, 'upload']);
-
-Route::post('/upload-table1', [Table1Controller::class, 'upload']);
-
+    Route::post('/upload-table1', [Table1Controller::class, 'upload']);
+});
 /*
 |--------------------------------------------------------------------------
 | Mark Book Routes
 |--------------------------------------------------------------------------
 */
+Route::group(['middleware' => ['auth:sanctum']], function () 
+{
+    Route::get('/mark-book', [MarkBookController::class, 'show']);
 
-Route::get('/mark-book', [MarkBookController::class, 'show']);
+    Route::post('/mark-book', [MarkBookController::class, 'store']);
 
-Route::post('/mark-book', [MarkBookController::class, 'store']);
+    Route::post('/mark-book-assesment', [MarkBookController::class, 'storeAssesment']);
 
-Route::post('/mark-book-assesment', [MarkBookController::class, 'storeAssesment']);
+    Route::get('/download-mark-book-page', [MarkBookController::class, 'download']);
 
-Route::get('/download-mark-book-page', [MarkBookController::class, 'download']);
+    Route::get('/spreadsheet', [MarkBookSpreadsheetController::class, 'spreadsheet']);
 
-Route::get('/spreadsheet', [MarkBookSpreadsheetController::class, 'spreadsheet']);
+    Route::post('/spreadsheet-download', [MarkBookSpreadsheetController::class, 'download']);
 
-Route::post('/spreadsheet-download', [MarkBookSpreadsheetController::class, 'download']);
+    Route::post('/upload-course-assesment', [FileUploadController::class, 'uploadCourseAssesment']);
 
-Route::post('/upload-course-assesment', [FileUploadController::class, 'uploadCourseAssesment']);
+    Route::post('/delete-course-assesment', [MarkBookController::class, 'deleteCourseAssesment']); 
 
-Route::post('/delete-course-assesment', [MarkBookController::class, 'deleteCourseAssesment']); 
-
-Route::get('/academic-terms', [AcademicTermController::class, 'showAll']);
-
+    Route::get('/academic-terms', [AcademicTermController::class, 'showAll']);
+});
 /*
 |--------------------------------------------------------------------------
 | DB Fixes Routes
 |--------------------------------------------------------------------------
 */
-
-Route::post('/fix-course-marks', [DbFixController::class, 'fixCourseMark']);
-
+Route::group(['middleware' => ['auth:sanctum']], function () 
+{
+    Route::post('/fix-course-marks', [DbFixController::class, 'fixCourseMark']);
+});
 
 
 

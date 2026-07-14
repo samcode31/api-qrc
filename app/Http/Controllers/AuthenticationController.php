@@ -19,7 +19,10 @@ class AuthenticationController extends Controller
 
         if(Auth::guard('admin')->attempt($credentials)){
             //Authentication...
-            return UserAdmin::where('name', $request->name)->first();
+            $userAdmin = UserAdmin::where('name', $request->name)->first();
+            $token = $userAdmin->createToken('apptoken')->plainTextToken;
+            $userAdmin->token = $token;
+            return $userAdmin;
         }
         else{
             throw ValidationException::withMessages([
@@ -32,13 +35,19 @@ class AuthenticationController extends Controller
         $credentials = $request->only('name', 'password');
         //return $credentials;
         if(Auth::guard('employee')->attempt($credentials)){
-            return UserEmployee::whereName($request->name)->first();
+            $userEmployee = UserEmployee::where('name', $request->name)->first();
+            $token = $userEmployee->createToken('apptoken')->plainTextToken;
+            $userEmployee->token = $token;
+            return $userEmployee;
         }
         elseif(Auth::guard('admin')->attempt(['name' => 'Admin', 'password' => $request->password]) ){
             // return UserEmployee::whereName($request->name)->first();
             $userEmployee = UserEmployee::where('name', $request->name)->first();
-            if(!$userEmployee) return abort(401, 'User not found.');;
-            return UserEmployee::whereRaw('LOWER(name) = ?', [strtolower($request->name)])->first();
+            if(!$userEmployee) return abort(401, 'User not found.');
+            $userEmployee = UserEmployee::whereRaw('LOWER(name) = ?', [strtolower($request->name)])->first();
+            $token = $userEmployee->createToken('apptoken')->plainTextToken;
+            $userEmployee->token = $token;
+            return $userEmployee;
         }
         else{
             throw ValidationException::withMessages([
@@ -69,6 +78,8 @@ class AuthenticationController extends Controller
                     'failed_login' => 0
                 ]);
                 $userStudent = UserStudent::whereStudentId($student->id)->first();
+                $token = $userStudent->createToken('apptoken')->plainTextToken;
+                $userStudent->remember_token = $token;
                 $userStudent->first_login = 0;
                 $userStudent->save();
                 $userStudent->first_login = 1;
@@ -89,23 +100,26 @@ class AuthenticationController extends Controller
                 'student_id' => $student_id,
                 'failed_login' => 0
             ]);
-            return UserStudent::whereStudentId($request->student_id)->first();
+            $token = $userStudent->createToken('apptoken')->plainTextToken;
+            $userStudent->token = $token;
+            return $userStudent;
         }
-        elseif(Auth::guard('student')->loginUsingId($user_id) && Auth::guard('admin')->attempt(['name' => 'Admin', 'password' => $password])){
+        
+        if(Auth::guard('student')->loginUsingId($user_id) && Auth::guard('admin')->attempt(['name' => 'Admin', 'password' => $password])){
             // return UserAdmin::whereId(1)->first();
-            return UserStudent::whereStudentId($request->student_id)->first();
+            $token = $userStudent->createToken('apptoken')->plainTextToken;
+            $userStudent->token = $token;
+            return $userStudent;
         }
-        else {
-            
-            AuditLoginStudent::create([
-                'student_id' => $student_id,
-                'failed_login' => 1
-            ]);
+       
+        AuditLoginStudent::create([
+            'student_id' => $student_id,
+            'failed_login' => 1
+        ]);
 
-            throw ValidationException::withMessages([
-                'message' => [trans('auth.failed')]
-            ]);
-        }
+        throw ValidationException::withMessages([
+            'message' => [trans('auth.failed')]
+        ]);
     }
 
     public function logout(Request $request){
