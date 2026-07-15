@@ -220,7 +220,12 @@ class MarkSheetController extends Controller
         }
 
 
-        $this->pdf->Output('I', 'Class Summary Mark Sheet.pdf');
+        // $this->pdf->Output('I', 'Class Summary Mark Sheet.pdf');
+        $pdfContent = $this->pdf->Output('S', 'Class Summary Mark Sheet.pdf');
+        return response($pdfContent, 200)
+        ->header('Content-Type', 'application/pdf')
+        ->header('Content-Disposition', 'inline; filename="Class Summary Mark Sheet.pdf"');
+        exit;
     }
 
     private function distinctSubjects($year, $term, $class_id)
