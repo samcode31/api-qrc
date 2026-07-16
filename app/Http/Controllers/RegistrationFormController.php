@@ -957,10 +957,13 @@ class RegistrationFormController extends Controller
 
 
         $this->fpdf->Ln();
-        
+        $pdfContent = $this->fpdf->Output('S', 'Registration Form.pdf');
+        return response($pdfContent, 200)
+        ->header('Content-Type', 'application/pdf')
+        ->header('Content-Disposition', 'inline; filename="Registration Form.pdf"');
 
 
-        $this->fpdf->Output();
+        // $this->fpdf->Output();
         exit;
         // $student = Student::whereId($id)->get();
         // $studentFirstName = $student[0]->first_name;
